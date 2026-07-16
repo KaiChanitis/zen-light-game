@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>禪堂掌燈人：動中觀照挑戰</title>
+    <title>普豐精舍：掌燈人挑戰 (實景還原版)</title>
     <style>
         :root {
-            --bg-color: #1a1a24;
-            --panel-color: #f7f4eb;
-            --switch-on: #ffeb3b;
-            --switch-off: #ccc;
+            --panel-bg: #eae3d2;
+            --switch-off-bg: #eeeeee;
+            --switch-on-bg: #fff;
+            --label-yellow: #ffeb3b;
+            --label-orange: #ff9800;
         }
 
         body {
@@ -26,32 +27,33 @@
 
         header {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
         }
 
         h1 {
             margin: 0;
             color: #ffd700;
+            font-size: 24px;
         }
 
         /* 遊戲主容器 */
         .game-container {
             display: flex;
-            width: 90%;
-            max-width: 1000px;
-            height: 500px;
+            width: 95%;
+            max-width: 1100px;
+            height: 520px;
             background: #1e1e24;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         /* 左側：禪堂實景模擬 */
         .zen-hall {
             flex: 1.2;
             position: relative;
-            background-color: var(--bg-color);
+            background-color: #111115;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -60,137 +62,185 @@
             transition: background-color 1s ease;
         }
 
-        /* 模擬佛前燈光 */
+        /* 實景燈光圖層 */
         .buddha-light {
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%);
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255,223,100,0.9) 0%, rgba(255,223,100,0) 70%);
             border-radius: 50%;
             opacity: 0;
-            transition: opacity 1.5s ease;
+            transition: opacity 1s ease;
             position: absolute;
-            top: 20%;
+            top: 15%;
+            z-index: 2;
         }
 
-        /* 模擬功德燈光 */
         .merit-lights {
             display: flex;
             justify-content: space-between;
-            width: 80%;
+            width: 85%;
             position: absolute;
-            top: 45%;
+            top: 40%;
             opacity: 0;
-            transition: opacity 1.5s ease;
+            transition: opacity 1s ease;
+            z-index: 2;
         }
         .merit-lamp {
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             background: radial-gradient(circle, #ff5722 0%, rgba(255,87,34,0) 70%);
             border-radius: 50%;
+            box-shadow: 0 0 15px #ff5722;
         }
 
-        /* 殿堂大燈 1-4 區模擬疊加 */
-        .hall-ambient {
+        /* 東西外側走廊燈光模擬 */
+        .side-hallway {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; width: 10%; height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 2;
+        }
+        #west-hallway { left: 0; background: linear-gradient(to right, rgba(255,235,150,0.4), transparent); }
+        #east-hallway { right: 0; background: linear-gradient(to left, rgba(255,235,150,0.4), transparent); }
+
+        /* 殿堂大燈分區 (1-4 區) */
+        .light-zone {
+            position: absolute;
+            left: 10%;
+            width: 80%;
+            height: 100%;
             pointer-events: none;
-            transition: background 1s ease;
+            opacity: 0;
+            transition: opacity 1s ease;
             z-index: 1;
         }
+        #zone-1 { background: radial-gradient(ellipse at top, rgba(255,255,240,0.3) 0%, transparent 60%); top: 0; }
+        #zone-2 { background: radial-gradient(ellipse at 33% 10%, rgba(255,255,240,0.3) 0%, transparent 60%); top: 0; }
+        #zone-3 { background: radial-gradient(ellipse at 66% 10%, rgba(255,255,240,0.3) 0%, transparent 60%); top: 0; }
+        #zone-4 { background: radial-gradient(ellipse at bottom, rgba(255,255,240,0.3) 0%, transparent 60%); top: 0; }
 
         .zen-title {
-            z-index: 2;
-            font-size: 24px;
+            z-index: 3;
+            font-size: 22px;
             font-weight: bold;
-            color: #aaa;
-            margin-top: 10px;
-            transition: color 1s ease;
+            color: #777;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
-        /* 右側：開關面板 */
-        .switch-panel {
-            flex: 1;
-            background-color: var(--panel-color);
+        /* 右側：完整還原開關牆面 */
+        .wall-panel {
+            flex: 1.5;
+            background-color: #f7f4eb;
             color: #333;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-left: 4px solid #ddd;
+            justify-content: flex-start;
+            overflow-y: auto;
+            border-left: 5px solid #ccc;
         }
 
-        .panel-board {
-            background: #eae3d2;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-            width: 90%;
-        }
-
-        .panel-title {
-            text-align: center;
+        .panel-header {
+            font-size: 16px;
             font-weight: bold;
-            margin-bottom: 15px;
-            color: #555;
-            border-bottom: 2px solid #ccc;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #444;
+            border-bottom: 2px solid #ddd;
             padding-bottom: 5px;
         }
 
-        /* 開關元件 */
-        .switch-row {
+        /* 三大塊實體開關配置 */
+        .physical-switch-grid {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        /* 單個實體開關盒 */
+        .switch-box {
+            background-color: var(--panel-bg);
+            border: 2px solid #bbb;
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        /* 左面板(雙扣) */
+        .box-left { width: 22%; }
+        /* 中面板(六扣) */
+        .box-middle { width: 38%; }
+        /* 右面板(六扣標籤) */
+        .box-right { width: 38%; }
+
+        /* 實體微型開關按鍵元件 */
+        .physical-switch {
             background: #fff;
-            padding: 8px 12px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .switch-label {
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .toggle-btn {
-            width: 50px;
-            height: 26px;
-            background-color: var(--switch-off);
-            border-radius: 13px;
-            position: relative;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             cursor: pointer;
-            transition: background-color 0.3s;
+            user-select: none;
+            position: relative;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.15);
         }
 
-        .toggle-btn::after {
-            content: '';
-            position: absolute;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background-color: white;
-            top: 2px;
-            left: 2px;
-            transition: left 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        /* 按鍵開關的凹凸視覺感 */
+        .switch-rocker {
+            width: 24px;
+            height: 18px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            position: relative;
+            box-shadow: inset 0 2px 2px rgba(0,0,0,0.1);
+            transition: all 0.1s;
         }
 
-        .toggle-btn.active {
-            background-color: #4caf50;
+        /* 開關按下狀態 (ON 往右凸或下凸) */
+        .physical-switch.active .switch-rocker {
+            background: #e0e0e0;
+            box-shadow: inset 0 -2px 2px rgba(0,0,0,0.1);
+            border-top: 3px solid #888;
         }
 
-        .toggle-btn.active::after {
-            left: 26px;
-        }
-
-        /* 指引與訊息 */
-        .info-panel {
+        /* 標籤文字樣式 */
+        .switch-tag {
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 4px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            text-align: center;
             width: 90%;
-            max-width: 1000px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* 標籤顏色還原 */
+        .tag-yellow { background-color: var(--label-yellow); color: #000; }
+        .tag-orange { background-color: var(--label-orange); color: #fff; }
+        .tag-none { background-color: #ddd; color: #555; }
+
+        /* 網格排列六扣開關 */
+        .six-button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        /* 狀態指引 */
+        .info-panel {
+            width: 95%;
+            max-width: 1100px;
             background: #25252d;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             text-align: center;
         }
@@ -198,35 +248,13 @@
         #hint-msg {
             color: #ff9800;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 16px;
             margin-bottom: 5px;
         }
 
         #step-guide {
             color: #bbb;
-            font-size: 14px;
-        }
-
-        /* 靜音/分貝計模擬 */
-        .mindfulness-meter {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        .bar {
-            width: 200px;
-            height: 10px;
-            background: #444;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-left: 10px;
-        }
-        .progress {
-            width: 100%;
-            height: 100%;
-            background: #4caf50;
-            transition: width 0.3s, background-color 0.3s;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -234,227 +262,242 @@
 
     <header>
         <h1>第一關：清晨入寺：開啟光明</h1>
-        <p>早上第一位義工來到普豐精舍，請依正確順序莊嚴、安靜地開啟殿堂光明。</p>
+        <p>請依禪修班規定，由內而外莊嚴、安靜地開啟普豐精舍禪堂的燈光設備。</p>
     </header>
 
     <div class="game-container">
         <div class="zen-hall" id="zenHall">
             <div class="zen-title" id="zenTitle">靜謐禪堂 (微暗)</div>
+            
             <div class="buddha-light" id="buddhaLight"></div>
             <div class="merit-lights" id="meritLights">
                 <div class="merit-lamp"></div>
                 <div class="merit-lamp"></div>
             </div>
-            <div class="hall-ambient" id="hallAmbient"></div>
-            <div style="z-index:2; color: #888; font-size:12px;">【模擬禪坐與法會空間】</div>
+            
+            <div class="side-hallway" id="west-hallway"></div>
+            <div class="side-hallway" id="east-hallway"></div>
+
+            <div class="light-zone" id="zone-1"></div>
+            <div class="light-zone" id="zone-2"></div>
+            <div class="light-zone" id="zone-3"></div>
+            <div class="light-zone" id="zone-4"></div>
+
+            <div style="z-index:3; color: #888; font-size:12px;">【模擬禪堂實景】</div>
         </div>
 
-        <div class="switch-panel">
-            <div class="panel-board">
-                <div class="panel-title">中台禪寺 普豐精舍 燈控</div>
+        <div class="wall-panel">
+            <div class="panel-header">普豐精舍 禪堂實體燈控面板</div>
+            <div class="physical-switch-grid">
                 
-                <div class="switch-row">
-                    <span class="switch-label">佛前燈</span>
-                    <div class="toggle-btn" id="sw-buddha" onclick="toggleSwitch('buddha')"></div>
+                <div class="switch-box box-left">
+                    <div style="font-size:10px; text-align:center; color:#666;">佛前/消災</div>
+                    <div class="physical-switch" id="sw-buddha" onclick="clickSwitch('buddha')">
+                        <div class="switch-rocker"></div>
+                        <div class="switch-tag tag-yellow">佛前燈</div>
+                    </div>
+                    <div class="physical-switch" id="sw-merit" onclick="clickSwitch('merit')">
+                        <div class="switch-rocker"></div>
+                        <div class="switch-tag tag-orange">消災/功德燈</div>
+                    </div>
                 </div>
-                <div class="switch-row">
-                    <span class="switch-label">消災/功德燈</span>
-                    <div class="toggle-btn" id="sw-merit" onclick="toggleSwitch('merit')"></div>
+
+                <div class="switch-box box-middle">
+                    <div style="font-size:10px; text-align:center; color:#666;">殿堂大燈分區</div>
+                    <div class="six-button-grid">
+                        <div class="physical-switch" id="sw-l1" onclick="clickSwitch('l1')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-yellow">1</div>
+                        </div>
+                        <div class="physical-switch" id="sw-unused1" onclick="clickSwitch('unused1')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-none">備用</div>
+                        </div>
+                        <div class="physical-switch" id="sw-l2" onclick="clickSwitch('l2')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-yellow">2</div>
+                        </div>
+                        <div class="physical-switch" id="sw-unused2" onclick="clickSwitch('unused2')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-none">備用</div>
+                        </div>
+                        <div class="physical-switch" id="sw-l3" onclick="clickSwitch('l3')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-yellow">3</div>
+                        </div>
+                        <div class="physical-switch" id="sw-l4" onclick="clickSwitch('l4')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-yellow">4</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="switch-row">
-                    <span class="switch-label">殿堂大燈 1 區</span>
-                    <div class="toggle-btn" id="sw-l1" onclick="toggleSwitch('l1')"></div>
+
+                <div class="switch-box box-right">
+                    <div style="font-size:10px; text-align:center; color:#666;">東/西廊道功能</div>
+                    <div class="six-button-grid">
+                        <div class="physical-switch" id="sw-west-out-front" onclick="clickSwitch('west-out-front')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-yellow">西(前)外</div>
+                        </div>
+                        <div class="physical-switch" id="sw-east-out-front" onclick="clickSwitch('east-out-front')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-yellow">東(前)外</div>
+                        </div>
+                        <div class="physical-switch" id="sw-west-out-back" onclick="clickSwitch('west-out-back')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-orange">西(後)外</div>
+                        </div>
+                        <div class="physical-switch" id="sw-east-out-back" onclick="clickSwitch('east-out-back')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-orange">東(後)外</div>
+                        </div>
+                        <div class="physical-switch" id="sw-west-indicator" onclick="clickSwitch('west-indicator')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-orange">西指示燈</div>
+                        </div>
+                        <div class="physical-switch" id="sw-east-indicator" onclick="clickSwitch('east-indicator')">
+                            <div class="switch-rocker"></div>
+                            <div class="switch-tag tag-orange">東指示燈</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="switch-row">
-                    <span class="switch-label">殿堂大燈 2 區</span>
-                    <div class="toggle-btn" id="sw-l2" onclick="toggleSwitch('l2')"></div>
-                </div>
-                <div class="switch-row">
-                    <span class="switch-label">殿堂大燈 3 區</span>
-                    <div class="toggle-btn" id="sw-l3" onclick="toggleSwitch('l3')"></div>
-                </div>
-                <div class="switch-row">
-                    <span class="switch-label">殿堂大燈 4 區</span>
-                    <div class="toggle-btn" id="sw-l4" onclick="toggleSwitch('l4')"></div>
-                </div>
+
             </div>
         </div>
     </div>
 
     <div class="info-panel">
-        <div id="hint-msg">💡 任務指引：請先開啟「佛前燈」，禮敬諸佛。</div>
-        <div id="step-guide">當前步驟: 1/6</div>
-        <div class="mindfulness-meter">
-            <span>正念覺照值 (動作細緻度)：</span>
-            <div class="bar"><div class="progress" id="mindfulnessBar"></div></div>
-        </div>
+        <div id="hint-msg">💡 任務指引：請先開啟「佛前燈」，禮敬三寶。</div>
+        <div id="step-guide">當前步驟: 1/8</div>
     </div>
 
     <script>
-        // 遊戲狀態
-        let currentStep = 1;
+        // 紀錄所有開關狀態
         const switches = {
-            buddha: false,
-            merit: false,
-            l1: false,
-            l2: false,
-            l3: false,
-            l4: false
+            buddha: false, merit: false,
+            l1: false, l2: false, l3: false, l4: false,
+            unused1: false, unused2: false,
+            'west-out-front': false, 'east-out-front': false,
+            'west-out-back': false, 'east-out-back': false,
+            'west-indicator': false, 'east-indicator': false
         };
 
-        // 預期的正確開燈順序
-        const correctSequence = ['buddha', 'merit', 'l1', 'l2', 'l3', 'l4'];
-        
-        // 覺照值 (血條) 滿分 100
-        let mindfulness = 100;
-        let lastClickTime = 0;
+        // 第一關正確開燈步驟順序
+        const correctSequence = [
+            'buddha',              // 1. 佛前燈
+            'merit',               // 2. 消災功德燈
+            'west-indicator',      // 3. 西指示燈 (引導指示)
+            'east-indicator',      // 4. 東指示燈
+            'l1',                  // 5. 殿堂大燈 1 區
+            'l2',                  // 6. 殿堂大燈 2 區
+            'l3',                  // 7. 殿堂大燈 3 區
+            'l4'                   // 8. 殿堂大燈 4 區
+        ];
 
-        function toggleSwitch(id) {
-            const now = Date.now();
-            // 偵測是否點擊過快 (動中缺乏觀照)
-            if (now - lastClickTime < 800) {
-                mindfulness -= 15;
-                if (mindfulness < 0) mindfulness = 0;
-                updateMindfulnessUI();
-                alert("⚠️ 動作太急躁了！請緩慢、莊嚴地操作開關。");
-            }
-            lastClickTime = now;
+        let currentStep = 1;
 
-            // 改變開關狀態
+        function clickSwitch(id) {
+            // 切換開關狀態
             switches[id] = !switches[id];
-            const btn = document.getElementById('sw-' + id);
+            const element = document.getElementById('sw-' + id);
             
             if (switches[id]) {
-                btn.classList.add('active');
+                element.classList.add('active');
                 checkStep(id, true);
             } else {
-                btn.classList.remove('active');
+                element.classList.remove('active');
                 checkStep(id, false);
             }
 
             updateVisuals();
         }
 
-        // 檢查步驟
         function checkStep(id, isON) {
+            // 處理備用或廊道非必要燈光
+            if (id.startsWith('unused') || id.includes('out-front') || id.includes('out-back')) {
+                return; // 廊道燈隨時可以自由開關，不影響主線順序
+            }
+
             const expectedId = correctSequence[currentStep - 1];
 
             if (isON && id === expectedId) {
-                // 按對了順序
                 currentStep++;
                 updateGuide();
             } else if (!isON) {
-                // 如果把對的燈關掉了，退回上一步
+                // 若關閉了前一步已完成的燈，扣回上一步
                 if (currentStep > 1 && id === correctSequence[currentStep - 2]) {
                     currentStep--;
                     updateGuide();
                 }
             } else {
-                // 按錯順序
-                mindfulness -= 10;
-                if (mindfulness < 0) mindfulness = 0;
-                updateMindfulnessUI();
-                
-                // 強制彈回關閉狀態 (不讓玩家投機取巧)
+                // 點錯順序
+                alert("💡 順序不合禪堂常規喔！請依指引順序莊嚴開啟。");
+                // 自動彈回關閉狀態
                 setTimeout(() => {
                     switches[id] = false;
                     document.getElementById('sw-' + id).classList.remove('active');
                     updateVisuals();
                 }, 300);
-                
-                alert("💡 順序不對喔！請重新觀察目前大眾最需要先亮起的是哪個燈？");
             }
 
-            // 檢查是否通關
-            if (currentStep === 7 && mindfulness > 30) {
+            // 通關條件
+            if (currentStep === 9) {
                 setTimeout(() => {
-                    alert(`🎉 【恭喜通關！】\n您已成功開啟清晨禪堂的光明！\n最終正念覺照值：${mindfulness}%。\n心細如絲，大眾安穩！`);
+                    alert("🎉【第一關圓滿！】\n您已成功依規定開啟殿堂所有主要燈光！\n恭敬莊嚴，準備進入第二關靜坐考驗。");
                 }, 500);
             }
         }
 
-        // 更新指引文字
         function updateGuide() {
             const stepGuide = document.getElementById('step-guide');
             const hintMsg = document.getElementById('hint-msg');
-            stepGuide.innerText = `當前步驟: ${currentStep > 6 ? 6 : currentStep}/6`;
+            stepGuide.innerText = `當前步驟: ${currentStep > 8 ? 8 : currentStep}/8`;
 
             switch(currentStep) {
-                case 1:
-                    hintMsg.innerText = "💡 任務指引：請先開啟「佛前燈」，禮敬諸佛。";
-                    break;
-                case 2:
-                    hintMsg.innerText = "💡 任務指引：接著開啟「消災/功德燈」，為大眾祈福。";
-                    break;
-                case 3:
-                    hintMsg.innerText = "💡 任務指引：現在由內而外，開啟「殿堂大燈 1 區」。";
-                    break;
-                case 4:
-                    hintMsg.innerText = "💡 任務指引：請繼續開啟「殿堂大燈 2 區」。";
-                    break;
-                case 5:
-                    hintMsg.innerText = "💡 任務指引：請繼續開啟「殿堂大燈 3 區」。";
-                    break;
-                case 6:
-                    hintMsg.innerText = "💡 任務指引：最後開啟靠近門口的「殿堂大燈 4 區」。";
-                    break;
-                case 7:
-                    hintMsg.innerText = "🌟 圓滿！殿堂已完全明亮，準備迎接大眾！";
-                    break;
+                case 1: hintMsg.innerText = "💡 任務指引：請先開啟「佛前燈」，點亮光明心燈。"; break;
+                case 2: hintMsg.innerText = "💡 任務指引：開啟「消災/功德燈」，為信眾祈福。"; break;
+                case 3: hintMsg.innerText = "💡 任務指引：請先開啟「西指示燈」做好動線導引。"; break;
+                case 4: hintMsg.innerText = "💡 任務指引：請開啟「東指示燈」完成引導照明。"; break;
+                case 5: hintMsg.innerText = "💡 任務指引：現在由內而外，開啟「殿堂大燈 1 區」。"; break;
+                case 6: hintMsg.innerText = "💡 任務指引：請開啟「殿堂大燈 2 區」。"; break;
+                case 7: hintMsg.innerText = "💡 任務指引：請開啟「殿堂大燈 3 區」。"; break;
+                case 8: hintMsg.innerText = "💡 任務指引：最後開啟靠近門口的「殿堂大燈 4 區」。"; break;
+                case 9: hintMsg.innerText = "🌟 殿堂大放光明！第一關順利通關。"; break;
             }
         }
 
-        // 更新正念血條
-        function updateMindfulnessUI() {
-            const bar = document.getElementById('mindfulnessBar');
-            bar.style.width = mindfulness + '%';
-            if (mindfulness < 40) {
-                bar.style.backgroundColor = '#f44336';
-            } else if (mindfulness < 70) {
-                bar.style.backgroundColor = '#ff9800';
-            } else {
-                bar.style.backgroundColor = '#4caf50';
-            }
-        }
-
-        // 根據開關狀態更新左側畫面
         function updateVisuals() {
-            const zenHall = document.getElementById('zenHall');
-            const buddhaLight = document.getElementById('buddhaLight');
-            const meritLights = document.getElementById('meritLights');
-            const hallAmbient = document.getElementById('hallAmbient');
-            const zenTitle = document.getElementById('zenTitle');
-
-            // 佛前燈
-            buddhaLight.style.opacity = switches.buddha ? "1" : "0";
+            // 更新左側禪堂視景
+            document.getElementById('buddhaLight').style.opacity = switches.buddha ? "1" : "0";
+            document.getElementById('meritLights').style.opacity = switches.merit ? "1" : "0";
             
-            // 功德燈
-            meritLights.style.opacity = switches.merit ? "1" : "0";
+            // 東西走廊
+            const westOn = switches['west-out-front'] || switches['west-out-back'] || switches['west-indicator'];
+            const eastOn = switches['east-out-front'] || switches['east-out-back'] || switches['east-indicator'];
+            document.getElementById('west-hallway').style.opacity = westOn ? "1" : "0";
+            document.getElementById('east-hallway').style.opacity = eastOn ? "1" : "0";
 
-            // 計算大燈開啟了幾區
-            let onCount = 0;
-            if (switches.l1) onCount++;
-            if (switches.l2) onCount++;
-            if (switches.l3) onCount++;
-            if (switches.l4) onCount++;
+            // 大燈分區
+            document.getElementById('zone-1').style.opacity = switches.l1 ? "1" : "0";
+            document.getElementById('zone-2').style.opacity = switches.l2 ? "1" : "0";
+            document.getElementById('zone-3').style.opacity = switches.l3 ? "1" : "0";
+            document.getElementById('zone-4').style.opacity = switches.l4 ? "1" : "0";
 
-            // 動態改變大燈亮度
-            let alpha = onCount * 0.22; // 每開一區大燈，增加亮度
-            hallAmbient.style.background = `rgba(255, 253, 240, ${alpha})`;
-
-            // 變更標題文字
+            // 標題顯示
+            const zenTitle = document.getElementById('zenTitle');
+            let onCount = [switches.l1, switches.l2, switches.l3, switches.l4].filter(Boolean).length;
             if (onCount === 4) {
                 zenTitle.innerText = "莊嚴殿堂 (通明)";
                 zenTitle.style.color = "#ffd700";
             } else if (onCount > 0) {
-                zenTitle.innerText = `殿堂漸亮 (開啟 ${onCount} 區)`;
+                zenTitle.innerText = `殿堂明亮 (已開 ${onCount} 區大燈)`;
                 zenTitle.style.color = "#ddd";
             } else if (switches.buddha || switches.merit) {
-                zenTitle.innerText = "禪堂 (微光安詳)";
+                zenTitle.innerText = "禪堂 (暖色莊嚴)";
                 zenTitle.style.color = "#fbc02d";
             } else {
                 zenTitle.innerText = "靜謐禪堂 (微暗)";
-                zenTitle.style.color = "#aaa";
+                zenTitle.style.color = "#777";
             }
         }
     </script>
