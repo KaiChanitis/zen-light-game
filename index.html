@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>禪堂掌燈人：動中觀照挑戰</title>
+    <style>
+        :root {
+            --bg-color: #1a1a24;
+            --panel-color: #f7f4eb;
+            --switch-on: #ffeb3b;
+            --switch-off: #ccc;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background-color: #121214;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            color: #ffd700;
+        }
+
+        /* 遊戲主容器 */
+        .game-container {
+            display: flex;
+            width: 90%;
+            max-width: 1000px;
+            height: 500px;
+            background: #1e1e24;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        /* 左側：禪堂實景模擬 */
+        .zen-hall {
+            flex: 1.2;
+            position: relative;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            transition: background-color 1s ease;
+        }
+
+        /* 模擬佛前燈光 */
+        .buddha-light {
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            position: absolute;
+            top: 20%;
+        }
+
+        /* 模擬功德燈光 */
+        .merit-lights {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            position: absolute;
+            top: 45%;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+        .merit-lamp {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #ff5722 0%, rgba(255,87,34,0) 70%);
+            border-radius: 50%;
+        }
+
+        /* 殿堂大燈 1-4 區模擬疊加 */
+        .hall-ambient {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            transition: background 1s ease;
+            z-index: 1;
+        }
+
+        .zen-title {
+            z-index: 2;
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            margin-top: 10px;
+            transition: color 1s ease;
+        }
+
+        /* 右側：開關面板 */
+        .switch-panel {
+            flex: 1;
+            background-color: var(--panel-color);
+            color: #333;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-left: 4px solid #ddd;
+        }
+
+        .panel-board {
+            background: #eae3d2;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            width: 90%;
+        }
+
+        .panel-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #555;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        /* 開關元件 */
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .switch-label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .toggle-btn {
+            width: 50px;
+            height: 26px;
+            background-color: var(--switch-off);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-btn::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-btn.active {
+            background-color: #4caf50;
+        }
+
+        .toggle-btn.active::after {
+            left: 26px;
+        }
+
+        /* 指引與訊息 */
+        .info-panel {
+            width: 90%;
+            max-width: 1000px;
+            background: #25252d;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        #hint-msg {
+            color: #ff9800;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        #step-guide {
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        /* 靜音/分貝計模擬 */
+        .mindfulness-meter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .bar {
+            width: 200px;
+            height: 10px;
+            background: #444;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-left: 10px;
+        }
+        .progress {
+            width: 100%;
+            height: 100%;
+            background: #4caf50;
+            transition: width 0.3s, background-color 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>第一關：清晨入寺：開啟光明</h1>
+        <p>早上第一位義工來到普豐精舍，請依正確順序莊嚴、安靜地開啟殿堂光明。</p>
+    </header>
+
+    <div class="game-container">
+        <div class="zen-hall" id="zenHall">
+            <div class="zen-title" id="zenTitle">靜謐禪堂 (微暗)</div>
+            <div class="buddha-light" id="buddhaLight"></div>
+            <div class="merit-lights" id="meritLights">
+                <div class="merit-lamp"></div>
+                <div class="merit-lamp"></div>
+            </div>
+            <div class="hall-ambient" id="hallAmbient"></div>
+            <div style="z-index:2; color: #888; font-size:12px;">【模擬禪坐與法會空間】</div>
+        </div>
+
+        <div class="switch-panel">
+            <div class="panel-board">
+                <div class="panel-title">中台禪寺 普豐精舍 燈控</div>
+                
+                <div class="switch-row">
+                    <span class="switch-label">佛前燈</span>
+                    <div class="toggle-btn" id="sw-buddha" onclick="toggleSwitch('buddha')"></div>
+                </div>
+                <div class="switch-row">
+                    <span class="switch-label">消災/功德燈</span>
+                    <div class="toggle-btn" id="sw-merit" onclick="toggleSwitch('merit')"></div>
+                </div>
+                <div class="switch-row">
+                    <span class="switch-label">殿堂大燈 1 區</span>
+                    <div class="toggle-btn" id="sw-l1" onclick="toggleSwitch('l1')"></div>
+                </div>
+                <div class="switch-row">
+                    <span class="switch-label">殿堂大燈 2 區</span>
+                    <div class="toggle-btn" id="sw-l2" onclick="toggleSwitch('l2')"></div>
+                </div>
+                <div class="switch-row">
+                    <span class="switch-label">殿堂大燈 3 區</span>
+                    <div class="toggle-btn" id="sw-l3" onclick="toggleSwitch('l3')"></div>
+                </div>
+                <div class="switch-row">
+                    <span class="switch-label">殿堂大燈 4 區</span>
+                    <div class="toggle-btn" id="sw-l4" onclick="toggleSwitch('l4')"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <div id="hint-msg">💡 任務指引：請先開啟「佛前燈」，禮敬諸佛。</div>
+        <div id="step-guide">當前步驟: 1/6</div>
+        <div class="mindfulness-meter">
+            <span>正念覺照值 (動作細緻度)：</span>
+            <div class="bar"><div class="progress" id="mindfulnessBar"></div></div>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲狀態
+        let currentStep = 1;
+        const switches = {
+            buddha: false,
+            merit: false,
+            l1: false,
+            l2: false,
+            l3: false,
+            l4: false
+        };
+
+        // 預期的正確開燈順序
+        const correctSequence = ['buddha', 'merit', 'l1', 'l2', 'l3', 'l4'];
+        
+        // 覺照值 (血條) 滿分 100
+        let mindfulness = 100;
+        let lastClickTime = 0;
+
+        function toggleSwitch(id) {
+            const now = Date.now();
+            // 偵測是否點擊過快 (動中缺乏觀照)
+            if (now - lastClickTime < 800) {
+                mindfulness -= 15;
+                if (mindfulness < 0) mindfulness = 0;
+                updateMindfulnessUI();
+                alert("⚠️ 動作太急躁了！請緩慢、莊嚴地操作開關。");
+            }
+            lastClickTime = now;
+
+            // 改變開關狀態
+            switches[id] = !switches[id];
+            const btn = document.getElementById('sw-' + id);
+            
+            if (switches[id]) {
+                btn.classList.add('active');
+                checkStep(id, true);
+            } else {
+                btn.classList.remove('active');
+                checkStep(id, false);
+            }
+
+            updateVisuals();
+        }
+
+        // 檢查步驟
+        function checkStep(id, isON) {
+            const expectedId = correctSequence[currentStep - 1];
+
+            if (isON && id === expectedId) {
+                // 按對了順序
+                currentStep++;
+                updateGuide();
+            } else if (!isON) {
+                // 如果把對的燈關掉了，退回上一步
+                if (currentStep > 1 && id === correctSequence[currentStep - 2]) {
+                    currentStep--;
+                    updateGuide();
+                }
+            } else {
+                // 按錯順序
+                mindfulness -= 10;
+                if (mindfulness < 0) mindfulness = 0;
+                updateMindfulnessUI();
+                
+                // 強制彈回關閉狀態 (不讓玩家投機取巧)
+                setTimeout(() => {
+                    switches[id] = false;
+                    document.getElementById('sw-' + id).classList.remove('active');
+                    updateVisuals();
+                }, 300);
+                
+                alert("💡 順序不對喔！請重新觀察目前大眾最需要先亮起的是哪個燈？");
+            }
+
+            // 檢查是否通關
+            if (currentStep === 7 && mindfulness > 30) {
+                setTimeout(() => {
+                    alert(`🎉 【恭喜通關！】\n您已成功開啟清晨禪堂的光明！\n最終正念覺照值：${mindfulness}%。\n心細如絲，大眾安穩！`);
+                }, 500);
+            }
+        }
+
+        // 更新指引文字
+        function updateGuide() {
+            const stepGuide = document.getElementById('step-guide');
+            const hintMsg = document.getElementById('hint-msg');
+            stepGuide.innerText = `當前步驟: ${currentStep > 6 ? 6 : currentStep}/6`;
+
+            switch(currentStep) {
+                case 1:
+                    hintMsg.innerText = "💡 任務指引：請先開啟「佛前燈」，禮敬諸佛。";
+                    break;
+                case 2:
+                    hintMsg.innerText = "💡 任務指引：接著開啟「消災/功德燈」，為大眾祈福。";
+                    break;
+                case 3:
+                    hintMsg.innerText = "💡 任務指引：現在由內而外，開啟「殿堂大燈 1 區」。";
+                    break;
+                case 4:
+                    hintMsg.innerText = "💡 任務指引：請繼續開啟「殿堂大燈 2 區」。";
+                    break;
+                case 5:
+                    hintMsg.innerText = "💡 任務指引：請繼續開啟「殿堂大燈 3 區」。";
+                    break;
+                case 6:
+                    hintMsg.innerText = "💡 任務指引：最後開啟靠近門口的「殿堂大燈 4 區」。";
+                    break;
+                case 7:
+                    hintMsg.innerText = "🌟 圓滿！殿堂已完全明亮，準備迎接大眾！";
+                    break;
+            }
+        }
+
+        // 更新正念血條
+        function updateMindfulnessUI() {
+            const bar = document.getElementById('mindfulnessBar');
+            bar.style.width = mindfulness + '%';
+            if (mindfulness < 40) {
+                bar.style.backgroundColor = '#f44336';
+            } else if (mindfulness < 70) {
+                bar.style.backgroundColor = '#ff9800';
+            } else {
+                bar.style.backgroundColor = '#4caf50';
+            }
+        }
+
+        // 根據開關狀態更新左側畫面
+        function updateVisuals() {
+            const zenHall = document.getElementById('zenHall');
+            const buddhaLight = document.getElementById('buddhaLight');
+            const meritLights = document.getElementById('meritLights');
+            const hallAmbient = document.getElementById('hallAmbient');
+            const zenTitle = document.getElementById('zenTitle');
+
+            // 佛前燈
+            buddhaLight.style.opacity = switches.buddha ? "1" : "0";
+            
+            // 功德燈
+            meritLights.style.opacity = switches.merit ? "1" : "0";
+
+            // 計算大燈開啟了幾區
+            let onCount = 0;
+            if (switches.l1) onCount++;
+            if (switches.l2) onCount++;
+            if (switches.l3) onCount++;
+            if (switches.l4) onCount++;
+
+            // 動態改變大燈亮度
+            let alpha = onCount * 0.22; // 每開一區大燈，增加亮度
+            hallAmbient.style.background = `rgba(255, 253, 240, ${alpha})`;
+
+            // 變更標題文字
+            if (onCount === 4) {
+                zenTitle.innerText = "莊嚴殿堂 (通明)";
+                zenTitle.style.color = "#ffd700";
+            } else if (onCount > 0) {
+                zenTitle.innerText = `殿堂漸亮 (開啟 ${onCount} 區)`;
+                zenTitle.style.color = "#ddd";
+            } else if (switches.buddha || switches.merit) {
+                zenTitle.innerText = "禪堂 (微光安詳)";
+                zenTitle.style.color = "#fbc02d";
+            } else {
+                zenTitle.innerText = "靜謐禪堂 (微暗)";
+                zenTitle.style.color = "#aaa";
+            }
+        }
+    </script>
+</body>
+</html>
