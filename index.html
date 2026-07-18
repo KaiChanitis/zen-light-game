@@ -41,7 +41,7 @@
         .simulator-viewport {
             position: relative;
             width: 800px;
-            height: 450px; /* 16:9 比例，可依實際照片比例微調 */
+            height: 450px;
             background-color: #000;
             border-radius: 8px;
             overflow: hidden;
@@ -67,11 +67,12 @@
             mix-blend-mode: screen; /* 核心加法混光邏輯 */
             opacity: 0;
             transition: opacity 0.25s ease-in-out;
-            pointer-events: none; /* 防止圖片阻擋滑鼠事件 */
+            pointer-events: none;
         }
 
+        /* 優化：調降單層全開時的透明度，疊加時能保留更多細節，防止過曝 */
         .light-layer.active {
-            opacity: 1;
+            opacity: 0.75; 
         }
 
         /* 開關控制面板區域 */
@@ -104,7 +105,6 @@
             gap: 10px;
         }
 
-        /* 特殊面板佈局 */
         .grid-3-cols {
             grid-template-columns: repeat(3, 1fr);
         }
@@ -144,12 +144,13 @@
             <!-- 全黑底圖 -->
             <img src="assets/zen-dark.jpg" class="base-layer" alt="禪堂全黑基礎圖">
             
-            <!-- 燈光疊加層 (根據您的命名與確認的映射關係) -->
+            <!-- 燈光疊加層 -->
             <img id="layer-gate-detect" src="assets/gate-detect.jpg" class="light-layer">
             <img id="layer-back-detect" src="assets/back-detect.jpg" class="light-layer">
+            <img id="layer-l1" src="assets/light-mid-left1.jpg" class="light-layer"> <!-- 已更正：大燈1對應圖層 -->
             <img id="layer-l2" src="assets/light-l2.jpg" class="light-layer">
             <img id="layer-l3" src="assets/light-l3.jpg" class="light-layer">
-            <img id="layer-l4" src="assets/light-l4.jpg" class="light-layer">
+            <img id="layer-l4" src="assets/light-l4.jpg" class="light-layer"> <!-- 4-佛(大燈)專用圖層 -->
             <img id="layer-altar" src="assets/light-altar.jpg" class="light-layer">
             <img id="layer-buddha-projector" src="assets/light-buddha-projector.jpg" class="light-layer">
             <img id="layer-main-projector" src="assets/light-main-projector.jpg" class="light-layer">
@@ -161,14 +162,14 @@
         <!-- 右側：實體開關面板模擬 -->
         <div class="control-panels">
             
-            <!-- 大面板（左/中盒） -->
+            <!-- 主要控制大面板 -->
             <div class="panel-group">
                 <h3>主要控制大面板</h3>
                 <div class="switch-grid grid-3-cols">
                     <!-- 左/中側複合功能 -->
                     <button class="switch-btn" data-target="layer-gate-detect">大門感應</button>
                     <button class="switch-btn" data-target="layer-back-detect">後門感應</button>
-                    <button class="switch-btn" data-target="layer-l4">大燈 4</button>
+                    <button class="switch-btn" data-target="layer-l1">主要大燈 1</button> <!-- 已重新命名為大燈 1 -->
                     
                     <!-- 右側核心大燈 -->
                     <button class="switch-btn" data-target="layer-l3">主要大燈 3</button>
@@ -213,11 +214,7 @@
                     if (button.classList.contains('on')) {
                         if (targetLayer) targetLayer.classList.add('active');
                     } else {
-                        // 如果有複數開關對應同一個圖層（例如大燈4），需檢查是否還有其他開關開著
-                        const sharedButtons = document.querySelectorAll(`.switch-btn[data-target="${targetLayerId}"].on`);
-                        if (sharedButtons.length === 0 && targetLayer) {
-                            targetLayer.classList.remove('active');
-                        }
+                        if (targetLayer) targetLayer.classList.remove('active');
                     }
                 });
             });
