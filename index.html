@@ -46,7 +46,8 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: filter 0.3s ease-in-out; 
+            /* 讓黑階與對比度切換時柔和過渡 */
+            transition: filter 0.25s ease-in-out; 
         }
 
         /* 基礎全黑底圖 */
@@ -57,7 +58,7 @@
             display: block;
         }
 
-        /* 核心：燈光疊加層基礎設定 */
+        /* 燈光疊加層：移除所有不自然的 CSS 遮罩，恢復原圖真實擴散 */
         .light-layer {
             position: absolute;
             top: 0;
@@ -65,27 +66,16 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            mix-blend-mode: screen; /* 核心加法混光 */
+            /* 改用 plus-lighter，點亮時色彩更扎實，比 screen 更不容易局部死白 */
+            mix-blend-mode: plus-lighter; 
             opacity: 0;
-            transition: opacity 0.3s ease-in-out; 
+            transition: opacity 0.25s ease-in-out; 
             pointer-events: none;
         }
 
-        /* ==================== 方案一：針對不同燈具設定局部光衰減遮罩 ==================== */
-        
-        /* 1. 主要大燈與感應燈組：讓發光中心集中在天花板與中後方 (中心點設在畫面上方 50% 25%) */
-        .mask-main-lights {
-            -webkit-mask-image: radial-gradient(ellipse at 50% 25%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 80%);
-            mask-image: radial-gradient(ellipse at 50% 25%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 80%);
+        .light-layer.active {
+            opacity: 1; /* 預設完全釋放照片原本的真實亮度 */
         }
-
-        /* 2. 前壇與精緻照明組：讓發光中心精準鎖定在正前方佛壇區域 (中心點設在前方偏下 50% 55%) */
-        .mask-altar-lights {
-            -webkit-mask-image: radial-gradient(circle at 50% 55%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%);
-            mask-image: radial-gradient(circle at 50% 55%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%);
-        }
-        
-        /* ============================================================================== */
 
         /* 開關控制面板區域 */
         .control-panels {
@@ -153,31 +143,27 @@
         
         <!-- 左側：影像模擬顯示器 -->
         <div class="simulator-viewport">
-            <!-- 全黑底圖 -->
             <img src="assets/zen-dark.jpg" class="base-layer" alt="禪堂全黑基礎圖">
             
-            <!-- 燈光疊加層：已依功能分類套用對應的局部光衰減遮罩 -->
-            <!-- 主要大燈與感應燈組 (套用 mask-main-lights) -->
-            <img id="layer-gate-detect" src="assets/gate-detect.jpg" class="light-layer mask-main-lights">
-            <img id="layer-back-detect" src="assets/back-detect.jpg" class="light-layer mask-main-lights">
-            <img id="layer-l1" src="assets/light-mid-left1.jpg" class="light-layer mask-main-lights">
-            <img id="layer-l2" src="assets/light-l2.jpg" class="light-layer mask-main-lights">
-            <img id="layer-l3" src="assets/light-l3.jpg" class="light-layer mask-main-lights">
-            <img id="layer-l4" src="assets/light-l4.jpg" class="light-layer mask-main-lights">
+            <!-- 燈光疊加層 (恢復乾淨乾淨的圖層結構) -->
+            <img id="layer-gate-detect" src="assets/gate-detect.jpg" class="light-layer">
+            <img id="layer-back-detect" src="assets/back-detect.jpg" class="light-layer">
+            <img id="layer-l1" src="assets/light-mid-left1.jpg" class="light-layer">
+            <img id="layer-l2" src="assets/light-l2.jpg" class="light-layer">
+            <img id="layer-l3" src="assets/light-l3.jpg" class="light-layer">
+            <img id="layer-l4" src="assets/light-l4.jpg" class="light-layer">
             
-            <!-- 前壇與特殊照明組 (套用 mask-altar-lights) -->
-            <img id="layer-altar" src="assets/light-altar.jpg" class="light-layer mask-altar-lights">
-            <img id="layer-buddha-projector" src="assets/light-buddha-projector.jpg" class="light-layer mask-altar-lights">
-            <img id="layer-main-projector" src="assets/light-main-projector.jpg" class="light-layer mask-altar-lights">
-            <img id="layer-niche-outer" src="assets/light-niche-outer-recessed.jpg" class="light-layer mask-altar-lights">
-            <img id="layer-niche-inner" src="assets/light-niche-inner-recessed.jpg" class="light-layer mask-altar-lights">
-            <img id="layer-halogen" src="assets/light-halogen.jpg" class="light-layer mask-altar-lights">
+            <img id="layer-altar" src="assets/light-altar.jpg" class="light-layer">
+            <img id="layer-buddha-projector" src="assets/light-buddha-projector.jpg" class="light-layer">
+            <img id="layer-main-projector" src="assets/light-main-projector.jpg" class="light-layer">
+            <img id="layer-niche-outer" src="assets/light-niche-outer-recessed.jpg" class="light-layer">
+            <img id="layer-niche-inner" src="assets/light-niche-inner-recessed.jpg" class="light-layer">
+            <img id="layer-halogen" src="assets/light-halogen.jpg" class="light-layer">
         </div>
 
         <!-- 右側：實體開關面板模擬 -->
         <div class="control-panels">
             
-            <!-- 主要控制大面板 -->
             <div class="panel-group">
                 <h3>主要控制大面板</h3>
                 <div class="switch-grid grid-3-cols">
@@ -191,7 +177,6 @@
                 </div>
             </div>
 
-            <!-- 最右邊小面板 -->
             <div class="panel-group">
                 <h3>前壇與特殊照明面板</h3>
                 <div class="switch-grid">
@@ -215,44 +200,48 @@
             const layers = document.querySelectorAll('.light-layer');
             const viewport = document.querySelector('.simulator-viewport');
 
-            function adjustDynamicVisuals() {
+            // 核心動態優化：不切斷光線，而是透過控制整體畫面的對比與亮度來逼出細節
+            function stabilizeVisuals() {
                 const activeLayers = document.querySelectorAll('.light-layer.active');
                 const count = activeLayers.length;
 
-                let targetOpacity = 1.0;
-                let brightnessFilter = 1.0;
-                let contrastFilter = 1.0;
+                let globalBrightness = 1.0;
+                let globalContrast = 1.0;
+                let layerOpacity = 1.0;
 
-                // 配合方案一的局部遮罩，這裡的調光強度可以稍微放寬（因為邊緣已經不會重複疊加爆白了）
                 if (count <= 1) {
-                    targetOpacity = 1.0;     
-                    brightnessFilter = 1.0;
-                    contrastFilter = 1.0;
+                    // 單燈開啟：完全原汁原味，不限制擴散
+                    layerOpacity = 1.0;
+                    globalBrightness = 1.0;
+                    globalContrast = 1.0;
                 } else if (count === 2) {
-                    targetOpacity = 0.90;    
-                    brightnessFilter = 1.0;
-                    contrastFilter = 1.0;
+                    layerOpacity = 0.95;
+                    globalBrightness = 1.0;
+                    globalContrast = 1.05; // 微調對比，壓制雙圖層疊加的黑底雜訊
                 } else if (count === 3) {
-                    targetOpacity = 0.80;    
-                    brightnessFilter = 0.98; 
-                    contrastFilter = 1.02;   
+                    layerOpacity = 0.90;
+                    globalBrightness = 0.95; // 微調總亮度，保護高光
+                    globalContrast = 1.12;   // 逼出暗部線條
                 } else {
-                    // 全開時的極端狀況優化
-                    targetOpacity = Math.max(0.60, 1.0 - (count * 0.05)); 
-                    brightnessFilter = Math.max(0.90, 1.0 - (count * 0.01)); 
-                    contrastFilter = Math.min(1.15, 1.0 + (count * 0.02));   
+                    // 4盞燈以上邁向全開：透過拉高對比度 (Contrast) 來執行「高光壓制與暗部回歸」
+                    // 這樣燈光照亮遠處的細節不會不見，但畫面不會白茫茫
+                    layerOpacity = Math.max(0.75, 1.0 - (count * 0.03)); 
+                    globalBrightness = Math.max(0.82, 1.0 - (count * 0.02)); 
+                    globalContrast = Math.min(1.35, 1.0 + (count * 0.04));   
                 }
 
+                // 套用各圖層透明度
                 layers.forEach(layer => {
                     if (layer.classList.contains('active')) {
-                        layer.style.opacity = targetOpacity;
+                        layer.style.opacity = layerOpacity;
                     } else {
                         layer.style.opacity = 0;
                     }
                 });
 
-                if (count > 2) {
-                    viewport.style.filter = `brightness(${brightnessFilter}) contrast(${contrastFilter})`;
+                // 套用全局動態校正濾鏡
+                if (count > 1) {
+                    viewport.style.filter = `brightness(${globalBrightness}) contrast(${globalContrast})`;
                 } else {
                     viewport.style.filter = 'none';
                 }
@@ -271,7 +260,7 @@
                         if (targetLayer) targetLayer.classList.remove('active');
                     }
 
-                    adjustDynamicVisuals();
+                    stabilizeVisuals();
                 });
             });
         });
