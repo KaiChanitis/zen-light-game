@@ -1,69 +1,269 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const buttons = document.querySelectorAll('.switch-btn');
-    const layers = document.querySelectorAll('.light-layer');
-    const viewport = document.querySelector('.simulator-viewport'); // 取得畫面外框來套用濾鏡
-
-    function adjustDynamicVisuals() {
-        const activeLayers = document.querySelectorAll('.light-layer.active');
-        const count = activeLayers.length;
-
-        let targetOpacity = 1.0;
-        let brightnessFilter = 1.0;
-        let contrastFilter = 1.0;
-
-        // 依據開燈數量，動態對齊真實全開照片 (zen-full.jpg) 的視覺質感
-        if (count <= 1) {
-            targetOpacity = 1.0;   // 單燈：維持 100% 真實扎實度
-            brightnessFilter = 1.0;
-            contrastFilter = 1.0;
-        } else if (count === 2) {
-            targetOpacity = 0.85;
-            brightnessFilter = 1.0;
-            contrastFilter = 1.0;
-        } else if (count === 3) {
-            targetOpacity = 0.75;
-            brightnessFilter = 0.95; // 開始微調整體亮度
-            contrastFilter = 1.05;  // 稍微拉高對比，把被吃掉的線條細節逼出來
-        } else {
-            // 四盞燈以上（邁向全開）：強效校正，模擬真實照片的細節保留
-            // 燈開越多，透明度與亮度上限適度壓低，對比度提高
-            targetOpacity = Math.max(0.50, 1.0 - (count * 0.07)); 
-            brightnessFilter = Math.max(0.85, 1.0 - (count * 0.02)); // 防止高光區域過曝死白
-            contrastFilter = Math.min(1.20, 1.0 + (count * 0.03));   // 強化天花板與暗部細節
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>禪堂燈光模擬訓練系統</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --panel-bg: #2d2d2d;
+            --text-color: #ffffff;
+            --btn-active: #4caf50;
+            --btn-inactive: #555555;
         }
 
-        // 1. 套用各圖層的動態透明度
-        layers.forEach(layer => {
-            if (layer.classList.contains('active')) {
-                layer.style.opacity = targetOpacity;
-            } else {
-                layer.style.opacity = 0;
-            }
-        });
-
-        // 2. 直接對整個模擬畫面套用濾鏡校正，讓全開時的細節完美浮現
-        if (count > 2) {
-            viewport.style.filter = `brightness(${brightnessFilter}) contrast(${contrastFilter})`;
-        } else {
-            viewport.style.filter = 'none'; // 燈少時維持原汁原味
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-    }
 
-    buttons.forEach(button => {
-        button.addEventListener('click', () => {
-            const targetLayerId = button.getAttribute('data-target');
-            const targetLayer = document.getElementById(targetLayerId);
+        h1 {
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
 
-            button.classList.toggle('on');
+        .main-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            width: 100%;
+            justify-content: center;
+        }
 
-            if (button.classList.contains('on')) {
-                if (targetLayer) targetLayer.classList.add('active');
-            } else {
-                if (targetLayer) targetLayer.classList.remove('active');
+        /* 模擬器顯示區域 */
+        .simulator-viewport {
+            position: relative;
+            width: 800px;
+            height: 450px;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            /* 讓濾鏡切換時視覺過渡更平滑 */
+            transition: filter 0.3s ease-in-out; 
+        }
+
+        /* 基礎全黑底圖 */
+        .base-layer {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 燈光疊加層 */
+        .light-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            mix-blend-mode: screen; /* 核心加法混光 */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out; 
+            pointer-events: none;
+        }
+
+        /* 開關控制面板區域 */
+        .control-panels {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 320px;
+        }
+
+        .panel-group {
+            background-color: var(--panel-bg);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .panel-group h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+            font-size: 16px;
+            color: #ddd;
+        }
+
+        .switch-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .grid-3-cols {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .switch-btn {
+            background-color: var(--btn-inactive);
+            color: white;
+            border: none;
+            padding: 12px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2);
+        }
+
+        .switch-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .switch-btn.on {
+            background-color: var(--btn-active);
+            box-shadow: inset 0 3px 0 rgba(0,0,0,0.2), 0 2px 5px rgba(76,175,80,0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>禪堂燈光模擬訓練系統</h1>
+
+    <div class="main-container">
+        
+        <!-- 左側：影像模擬顯示器 -->
+        <div class="simulator-viewport">
+            <!-- 全黑底圖 -->
+            <img src="assets/zen-dark.jpg" class="base-layer" alt="禪堂全黑基礎圖">
+            
+            <!-- 燈光疊加層 (總共 12 層) -->
+            <img id="layer-gate-detect" src="assets/gate-detect.jpg" class="light-layer">
+            <img id="layer-back-detect" src="assets/back-detect.jpg" class="light-layer">
+            <img id="layer-l1" src="assets/light-mid-left1.jpg" class="light-layer">
+            <img id="layer-l2" src="assets/light-l2.jpg" class="light-layer">
+            <img id="layer-l3" src="assets/light-l3.jpg" class="light-layer">
+            <img id="layer-l4" src="assets/light-l4.jpg" class="light-layer">
+            <img id="layer-altar" src="assets/light-altar.jpg" class="light-layer">
+            <img id="layer-buddha-projector" src="assets/light-buddha-projector.jpg" class="light-layer">
+            <img id="layer-main-projector" src="assets/light-main-projector.jpg" class="light-layer">
+            <img id="layer-niche-outer" src="assets/light-niche-outer-recessed.jpg" class="light-layer">
+            <img id="layer-niche-inner" src="assets/light-niche-inner-recessed.jpg" class="light-layer">
+            <img id="layer-halogen" src="assets/light-halogen.jpg" class="light-layer">
+        </div>
+
+        <!-- 右側：實體開關面板模擬 -->
+        <div class="control-panels">
+            
+            <!-- 主要控制大面板 (6個開關) -->
+            <div class="panel-group">
+                <h3>主要控制大面板</h3>
+                <div class="switch-grid grid-3-cols">
+                    <button class="switch-btn" data-target="layer-gate-detect">大門感應</button>
+                    <button class="switch-btn" data-target="layer-back-detect">後門感應</button>
+                    <button class="switch-btn" data-target="layer-l1">主要大燈 1</button>
+                    
+                    <button class="switch-btn" data-target="layer-l3">主要大燈 3</button>
+                    <button class="switch-btn" data-target="layer-l2">主要大燈 2</button>
+                    <button class="switch-btn" data-target="layer-l4">4-佛 (大燈)</button> 
+                </div>
+            </div>
+
+            <!-- 最右邊小面板 (6個開關) -->
+            <div class="panel-group">
+                <h3>前壇與特殊照明面板</h3>
+                <div class="switch-grid">
+                    <button class="switch-btn" data-target="layer-altar">消超壇</button>
+                    <button class="switch-btn" data-target="layer-buddha-projector">佛像-投</button>
+                    <button class="switch-btn" data-target="layer-main-projector">主法-投</button>
+                    
+                    <button class="switch-btn" data-target="layer-niche-outer">佛龕-崁外</button>
+                    <button class="switch-btn" data-target="layer-niche-inner">佛龕-崁內</button>
+                    <button class="switch-btn" data-target="layer-halogen">鹵素燈</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('.switch-btn');
+            const layers = document.querySelectorAll('.light-layer');
+            const viewport = document.querySelector('.simulator-viewport');
+
+            // 動態視覺校正函式：對齊實體照片 zen-full.jpg 的細節與亮度表現
+            function adjustDynamicVisuals() {
+                const activeLayers = document.querySelectorAll('.light-layer.active');
+                const count = activeLayers.length;
+
+                let targetOpacity = 1.0;
+                let brightnessFilter = 1.0;
+                let contrastFilter = 1.0;
+
+                // 依據目前開啟的燈光數量，動態修正權重，防止數值過曝爆白
+                if (count <= 1) {
+                    targetOpacity = 1.0;     // 單燈：維持 100% 拍照時的扎實亮度
+                    brightnessFilter = 1.0;
+                    contrastFilter = 1.0;
+                } else if (count === 2) {
+                    targetOpacity = 0.85;    // 雙燈：微幅修正
+                    brightnessFilter = 1.0;
+                    contrastFilter = 1.0;
+                } else if (count === 3) {
+                    targetOpacity = 0.75;    // 三燈
+                    brightnessFilter = 0.95; // 稍微壓抑高光
+                    contrastFilter = 1.05;   // 微調對比，帶出暗部細節
+                } else {
+                    // 四盞燈以上迈向全開：強效校正，逼出天花板、紅燈籠與前壇輪廓
+                    targetOpacity = Math.max(0.50, 1.0 - (count * 0.07)); 
+                    brightnessFilter = Math.max(0.85, 1.0 - (count * 0.02)); 
+                    contrastFilter = Math.min(1.20, 1.0 + (count * 0.03));   
+                }
+
+                // 1. 套用各燈光圖層的動態透明度
+                layers.forEach(layer => {
+                    if (layer.classList.contains('active')) {
+                        layer.style.opacity = targetOpacity;
+                    } else {
+                        layer.style.opacity = 0;
+                    }
+                });
+
+                // 2. 套用視窗整體濾鏡，確保全開時的層次感與細節完全顯現
+                if (count > 2) {
+                    viewport.style.filter = `brightness(${brightnessFilter}) contrast(${contrastFilter})`;
+                } else {
+                    viewport.style.filter = 'none';
+                }
             }
 
-            // 觸發校正機制
-            adjustDynamicVisuals();
+            // 監聽所有開關按鈕
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetLayerId = button.getAttribute('data-target');
+                    const targetLayer = document.getElementById(targetLayerId);
+
+                    // 切換開關視覺按鈕狀態 (綠色 ON / 灰色 OFF)
+                    button.classList.toggle('on');
+
+                    // 切換對應圖層狀態
+                    if (button.classList.contains('on')) {
+                        if (targetLayer) targetLayer.classList.add('active');
+                    } else {
+                        if (targetLayer) targetLayer.classList.remove('active');
+                    }
+
+                    // 觸發校正，讓畫面即時運算
+                    adjustDynamicVisuals();
+                });
+            });
         });
-    });
-});
+    </script>
+</body>
+</html>
