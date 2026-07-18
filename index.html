@@ -66,13 +66,14 @@
             object-fit: cover;
             mix-blend-mode: screen; /* 核心加法混光邏輯 */
             opacity: 0;
-            transition: opacity 0.25s ease-in-out;
+            /* 讓亮度切換時有柔和的漸變 */
+            transition: opacity 0.3s ease-in-out; 
             pointer-events: none;
         }
 
-        /* 優化：調降單層全開時的透明度，疊加時能保留更多細節，防止過曝 */
+        /* 改由 JavaScript 動態控制，這裡只處理結構 */
         .light-layer.active {
-            opacity: 0.45; 
+            /* 動態 opacity 將由 JS 計算後寫入 inline style */
         }
 
         /* 開關控制面板區域 */
@@ -141,16 +142,15 @@
         
         <!-- 左側：影像模擬顯示器 -->
         <div class="simulator-viewport">
-            <!-- 全黑底圖 -->
             <img src="assets/zen-dark.jpg" class="base-layer" alt="禪堂全黑基礎圖">
             
             <!-- 燈光疊加層 -->
             <img id="layer-gate-detect" src="assets/gate-detect.jpg" class="light-layer">
             <img id="layer-back-detect" src="assets/back-detect.jpg" class="light-layer">
-            <img id="layer-l1" src="assets/light-mid-left1.jpg" class="light-layer"> <!-- 已更正：大燈1對應圖層 -->
+            <img id="layer-l1" src="assets/light-mid-left1.jpg" class="light-layer">
             <img id="layer-l2" src="assets/light-l2.jpg" class="light-layer">
             <img id="layer-l3" src="assets/light-l3.jpg" class="light-layer">
-            <img id="layer-l4" src="assets/light-l4.jpg" class="light-layer"> <!-- 4-佛(大燈)專用圖層 -->
+            <img id="layer-l4" src="assets/light-l4.jpg" class="light-layer">
             <img id="layer-altar" src="assets/light-altar.jpg" class="light-layer">
             <img id="layer-buddha-projector" src="assets/light-buddha-projector.jpg" class="light-layer">
             <img id="layer-main-projector" src="assets/light-main-projector.jpg" class="light-layer">
@@ -162,32 +162,26 @@
         <!-- 右側：實體開關面板模擬 -->
         <div class="control-panels">
             
-            <!-- 主要控制大面板 -->
             <div class="panel-group">
                 <h3>主要控制大面板</h3>
                 <div class="switch-grid grid-3-cols">
-                    <!-- 左/中側複合功能 -->
                     <button class="switch-btn" data-target="layer-gate-detect">大門感應</button>
                     <button class="switch-btn" data-target="layer-back-detect">後門感應</button>
-                    <button class="switch-btn" data-target="layer-l1">主要大燈 1</button> <!-- 已重新命名為大燈 1 -->
+                    <button class="switch-btn" data-target="layer-l1">主要大燈 1</button>
                     
-                    <!-- 右側核心大燈 -->
                     <button class="switch-btn" data-target="layer-l3">主要大燈 3</button>
                     <button class="switch-btn" data-target="layer-l2">主要大燈 2</button>
                     <button class="switch-btn" data-target="layer-l4">4-佛 (大燈)</button> 
                 </div>
             </div>
 
-            <!-- 最右邊小面板 -->
             <div class="panel-group">
                 <h3>前壇與特殊照明面板</h3>
                 <div class="switch-grid">
-                    <!-- 左列 -->
                     <button class="switch-btn" data-target="layer-altar">消超壇</button>
                     <button class="switch-btn" data-target="layer-buddha-projector">佛像-投</button>
                     <button class="switch-btn" data-target="layer-main-projector">主法-投</button>
                     
-                    <!-- 右列 -->
                     <button class="switch-btn" data-target="layer-niche-outer">佛龕-崁外</button>
                     <button class="switch-btn" data-target="layer-niche-inner">佛龕-崁內</button>
                     <button class="switch-btn" data-target="layer-halogen">鹵素燈</button>
@@ -201,21 +195,54 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const buttons = document.querySelectorAll('.switch-btn');
+            const layers = document.querySelectorAll('.light-layer');
+
+            // 核心演算法：根據目前開啟的總燈光數量，動態計算最舒適的透明度
+            function adjustDynamicOpacity() {
+                // 1. 計算目前被打開的圖層總數
+                const activeLayers = document.querySelectorAll('.light-layer.active');
+                const count = activeLayers.length;
+
+                let targetOpacity = 1.0;
+
+                if (count <= 1) {
+                    targetOpacity = 1.0;  // 單燈開啟，維持 100% 真實最高亮度
+                } else if (count === 2) {
+                    targetOpacity = 0.85; // 雙燈開啟，微幅修正
+                } else if (count === 3) {
+                    targetOpacity = 0.70; // 三燈開啟
+                } else {
+                    // 四盞燈以上全開時，動態壓低到 0.5~0.55，防止 Screen 模式過曝死白
+                    targetOpacity = Math.max(0.52, 1.0 - (count * 0.08)); 
+                }
+
+                // 2. 將計算好的動態透明度套用到所有「已開啟」的圖層上
+                layers.forEach(layer => {
+                    if (layer.classList.contains('active')) {
+                        layer.style.opacity = targetOpacity;
+                    } else {
+                        layer.style.opacity = 0; // 沒開的燈維持全暗
+                    }
+                });
+            }
 
             buttons.forEach(button => {
                 button.addEventListener('click', () => {
                     const targetLayerId = button.getAttribute('data-target');
                     const targetLayer = document.getElementById(targetLayerId);
 
-                    // 切換開關按鈕狀態
+                    // 切換開關按鈕視覺狀態
                     button.classList.toggle('on');
 
-                    // 根據開關狀態，控制燈光圖層的顯隱
+                    // 切換圖層啟動狀態
                     if (button.classList.contains('on')) {
                         if (targetLayer) targetLayer.classList.add('active');
                     } else {
                         if (targetLayer) targetLayer.classList.remove('active');
                     }
+
+                    // 每次按鈕觸發，重新動態調節一次所有燈光的明暗權重
+                    adjustDynamicOpacity();
                 });
             });
         });
