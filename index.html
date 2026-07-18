@@ -46,7 +46,7 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            /* 讓黑階與對比度切換時柔和過渡 */
+            /* 柔和過渡：在多燈切換調光時視覺更自然 */
             transition: filter 0.25s ease-in-out; 
         }
 
@@ -58,7 +58,7 @@
             display: block;
         }
 
-        /* 燈光疊加層：移除所有不自然的 CSS 遮罩，恢復原圖真實擴散 */
+        /* 燈光疊加層 */
         .light-layer {
             position: absolute;
             top: 0;
@@ -66,15 +66,10 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* 改用 plus-lighter，點亮時色彩更扎實，比 screen 更不容易局部死白 */
-            mix-blend-mode: plus-lighter; 
+            mix-blend-mode: screen; /* 回歸 screen 機制，保證單燈安全防爆白 */
             opacity: 0;
             transition: opacity 0.25s ease-in-out; 
             pointer-events: none;
-        }
-
-        .light-layer.active {
-            opacity: 1; /* 預設完全釋放照片原本的真實亮度 */
         }
 
         /* 開關控制面板區域 */
@@ -145,7 +140,7 @@
         <div class="simulator-viewport">
             <img src="assets/zen-dark.jpg" class="base-layer" alt="禪堂全黑基礎圖">
             
-            <!-- 燈光疊加層 (恢復乾淨乾淨的圖層結構) -->
+            <!-- 12 盞完整燈光疊加層（移除所有死板的圓形遮罩，還原自然擴光） -->
             <img id="layer-gate-detect" src="assets/gate-detect.jpg" class="light-layer">
             <img id="layer-back-detect" src="assets/back-detect.jpg" class="light-layer">
             <img id="layer-l1" src="assets/light-mid-left1.jpg" class="light-layer">
@@ -164,6 +159,7 @@
         <!-- 右側：實體開關面板模擬 -->
         <div class="control-panels">
             
+            <!-- 主要控制大面板 -->
             <div class="panel-group">
                 <h3>主要控制大面板</h3>
                 <div class="switch-grid grid-3-cols">
@@ -177,6 +173,7 @@
                 </div>
             </div>
 
+            <!-- 前壇與特殊照明面板 -->
             <div class="panel-group">
                 <h3>前壇與特殊照明面板</h3>
                 <div class="switch-grid">
@@ -200,7 +197,7 @@
             const layers = document.querySelectorAll('.light-layer');
             const viewport = document.querySelector('.simulator-viewport');
 
-            // 核心動態優化：不切斷光線，而是透過控制整體畫面的對比與亮度來逼出細節
+            // 階梯式暗部穩定演算法
             function stabilizeVisuals() {
                 const activeLayers = document.querySelectorAll('.light-layer.active');
                 const count = activeLayers.length;
@@ -209,28 +206,32 @@
                 let globalContrast = 1.0;
                 let layerOpacity = 1.0;
 
+                // 【第一道防線】單燈點亮時，100% 採用原始照片參數，絕不干涉
                 if (count <= 1) {
-                    // 單燈開啟：完全原汁原味，不限制擴散
                     layerOpacity = 1.0;
                     globalBrightness = 1.0;
                     globalContrast = 1.0;
-                } else if (count === 2) {
-                    layerOpacity = 0.95;
-                    globalBrightness = 1.0;
-                    globalContrast = 1.05; // 微調對比，壓制雙圖層疊加的黑底雜訊
-                } else if (count === 3) {
+                } 
+                // 【第二道防線】雙燈開啟，微幅壓制重疊雜訊
+                else if (count === 2) {
+                    layerOpacity = 0.98;
+                    globalBrightness = 0.98;
+                    globalContrast = 1.05; 
+                } 
+                // 【第三道防線】中度多燈環境 (3-5盞)
+                else if (count <= 5) {
                     layerOpacity = 0.90;
-                    globalBrightness = 0.95; // 微調總亮度，保護高光
-                    globalContrast = 1.12;   // 逼出暗部線條
-                } else {
-                    // 4盞燈以上邁向全開：透過拉高對比度 (Contrast) 來執行「高光壓制與暗部回歸」
-                    // 這樣燈光照亮遠處的細節不會不見，但畫面不會白茫茫
-                    layerOpacity = Math.max(0.75, 1.0 - (count * 0.03)); 
-                    globalBrightness = Math.max(0.82, 1.0 - (count * 0.02)); 
-                    globalContrast = Math.min(1.35, 1.0 + (count * 0.04));   
+                    globalBrightness = 0.93; 
+                    globalContrast = 1.15;   
+                } 
+                // 【第四道防線】6盞燈以上迈向全開：透過高對比度將底層雜訊壓回純黑，同時保留光源擴散
+                else {
+                    layerOpacity = Math.max(0.70, 1.0 - (count * 0.03)); 
+                    globalBrightness = Math.max(0.80, 1.0 - (count * 0.02)); 
+                    globalContrast = Math.min(1.30, 1.0 + (count * 0.03));   
                 }
 
-                // 套用各圖層透明度
+                // 執行圖層透明度變更
                 layers.forEach(layer => {
                     if (layer.classList.contains('active')) {
                         layer.style.opacity = layerOpacity;
@@ -239,7 +240,7 @@
                     }
                 });
 
-                // 套用全局動態校正濾鏡
+                // 套用全局濾鏡（單燈或全關時 count <= 1，會精準走 'none'）
                 if (count > 1) {
                     viewport.style.filter = `brightness(${globalBrightness}) contrast(${globalContrast})`;
                 } else {
@@ -247,6 +248,7 @@
                 }
             }
 
+            // 開關切換邏輯
             buttons.forEach(button => {
                 button.addEventListener('click', () => {
                     const targetLayerId = button.getAttribute('data-target');
