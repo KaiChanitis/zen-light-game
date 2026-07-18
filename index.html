@@ -18,118 +18,122 @@
         }
 
         header { text-align: center; padding: 10px; }
-        h1 { margin: 5px 0; color: #ffd700; font-size: 24px; }
+        h1 { margin: 5px 0; color: #ffd700; font-size: 22px; }
 
         /* 關卡選單 */
-        .level-menu { display: flex; gap: 10px; margin-bottom: 15px; }
+        .level-menu { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; }
         .level-btn {
             background-color: #333; color: #fff; border: 2px solid #555;
-            padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;
+            padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.3s;
+            font-size: 13px;
         }
         .level-btn.active { background-color: #ffd700; color: #000; border-color: #ffd700; }
 
-        /* 遊戲主容器 */
+        /* 遊戲主容器：改為上下垂直排列，完美容納寬照片 */
         .game-container {
             display: flex;
+            flex-direction: column;
             width: 95%;
-            max-width: 1200px;
-            height: 550px;
+            max-width: 800px; /* 限制最大寬度，避免在電腦螢幕上拉得太大 */
             background: #1e1e24;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
-        /* ================= 左側：禪堂實景區 ================= */
+        /* ================= 上方：禪堂實景區 ================= */
         .zen-hall {
-            flex: 1.2;
             position: relative;
+            width: 100%;
             background-color: #000;
-            overflow: hidden;
+            line-height: 0; /* 消除圖片下方微小間隙 */
         }
-        /* 禪堂實景全暗底圖 */
         .zen-bg {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            pointer-events: none;
+            height: auto;
+            display: block;
+            object-fit: contain; /* 確保全景 100% 顯示，不裁切 */
         }
-        /* 燈光點亮效果模擬（疊加在實景圖上的環境濾鏡） */
         .light-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 235, 170, 0.25); /* 柔和黃光模擬 */
-            mix-blend-mode: screen; /* 讓光線自然融入黑暗照片中 */
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.5s ease;
+            background-color: rgba(255, 235, 180, 0.35);
+            mix-blend-mode: screen; pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
         }
 
-        /* 虛擬布幕保持不變 */
+        /* 虛擬布幕：等比例調整位置 */
         .projector-screen {
             position: absolute;
-            top: -200px; left: 25%; width: 50%; height: 160px;
-            background: #eee; border: 3px solid #333; color: #000;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; transition: top 1s ease; z-index: 10;
+            top: -50%; left: 25%; width: 50%; height: 35%;
+            background: #eee; border: 2px solid #333; color: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: bold; transition: top 1s ease; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            line-height: 1.4;
         }
-        .projector-screen.down { top: 20px; }
+        .projector-screen.down { top: 10%; }
 
-        /* ================= 右側：實體開關相片區 ================= */
+        /* ================= 下方：實體開關相片區 ================= */
         .panel-container {
-            flex: 1;
             position: relative;
-            background-color: #222;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            width: 100%;
+            background-color: #2a2a30;
+            line-height: 0;
         }
-        /* 實體照片面板基底 */
         .real-panel-img {
-            max-width: 100%;
-            max-height: 100%;
-            display: block;
+            width: 100%; height: auto; display: block; object-fit: contain;
         }
 
-        /* 💡 虛擬透明點擊熱區 (用來對應真實照片中的按鈕位置) */
+        /* 💡 精準點擊熱區 */
         .hit-box {
             position: absolute;
-            background-color: rgba(0, 255, 0, 0); /* 預設完全透明，改為 0.3 可以用來抓位置 */
+            background-color: rgba(0, 255, 0, 0); /* 可改為 0.4 來對齊位置 */
             border: 2px dashed transparent;
             cursor: pointer;
+            border-radius: 4px;
             transition: background-color 0.2s;
         }
-        /* 當開關被按下（開啟狀態）時，讓照片上的按鈕稍微發黃光，提示使用者它開著 */
         .hit-box.active {
-            background-color: rgba(255, 235, 0, 0.25);
+            background-color: rgba(255, 215, 0, 0.35);
             border-color: #ffd700;
+            box-shadow: 0 0 10px #ffd700;
         }
 
         /* --------------------------------------------------
-           ⚠️ 下方的百分比（top, left, width, height）
-           是根據「開關照片」比例抓的虛擬位置。
-           上傳照片後，您可以微調這些數值來對準照片中的按鈕！
+           對齊 switches-panel.jpg 寬度比例的隱形按鈕熱區
         -------------------------------------------------- */
-        #hit-buddha     { top: 20%; left: 10%; width: 20%; height: 15%; } /* 佛前燈 */
-        #hit-merit      { top: 40%; left: 10%; width: 20%; height: 15%; } /* 消災燈 */
+        /* 左側大面板 */
+        #hit-gate-detect   { top: 21%; left: 9.3%;  width: 8.5%; height: 16%; } /* 大門-探 */
+        #hit-center-detect { top: 40%; left: 9.3%;  width: 8.5%; height: 16%; } /* 中央-探 */
+        #hit-back-detect   { top: 59%; left: 9.3%;  width: 8.5%; height: 16%; } /* 後牆-探 */
 
-        #hit-l1         { top: 20%; left: 35%; width: 12%; height: 10%; } /* 大燈1 */
-        #hit-l2         { top: 35%; left: 35%; width: 12%; height: 10%; } /* 大燈2 */
-        #hit-l3         { top: 20%; left: 50%; width: 12%; height: 10%; } /* 大燈3 */
-        #hit-l4         { top: 35%; left: 50%; width: 12%; height: 10%; } /* 大燈4 */
-        #hit-niche      { top: 50%; left: 35%; width: 27%; height: 10%; } /* 龕內燈 */
+        /* 中間大面板 - 左排 */
+        #hit-mid-left1     { top: 22%; left: 31.3%; width: 8.5%; height: 15%; } /* 中左上(無標籤) */
+        #hit-west-detect   { top: 40%; left: 31.3%; width: 8.5%; height: 15%; } /* 西牆-探 */
+        #hit-niche-glow    { top: 58%; left: 31.3%; width: 8.5%; height: 15%; } /* 龕內日光 */
 
-        #hit-main-cast  { top: 20%; left: 70%; width: 12%; height: 10%; } /* 主法投射 */
-        #hit-screen-ctl { top: 35%; left: 70%; width: 12%; height: 10%; } /* 布幕開關 */
+        /* 中間大面板 - 右排 */
+        #hit-l1            { top: 22%; left: 46.2%; width: 8.2%; height: 14%; } /* 1-門 */
+        #hit-l2            { top: 39%; left: 46.2%; width: 8.2%; height: 14%; } /* 2 */
+        #hit-l4            { top: 57%; left: 46.2%; width: 8.2%; height: 14%; } /* 4-佛 */
+
+        /* 右側大面板 - 左排 */
+        #hit-altar         { top: 24%; left: 68.2%; width: 8.2%; height: 14%; } /* 消超壇 */
+        #hit-buddha-cast   { top: 42%; left: 68.2%; width: 8.2%; height: 14%; } /* 佛像-投 */
+        #hit-main-cast     { top: 59%; left: 68.2%; width: 8.2%; height: 14%; } /* 主法-投 */
+
+        /* 右側大面板 - 右排 */
+        #hit-l3            { top: 24%; left: 82.5%; width: 8.2%; height: 14%; } /* 3 (標籤為3/佛龕-嵌外) */
+        #hit-niche-in      { top: 42%; left: 82.5%; width: 8.2%; height: 14%; } /* 佛龕-嵌內 */
+        #hit-halogen       { top: 59%; left: 82.5%; width: 8.2%; height: 14%; } /* 鹵素燈 */
 
         /* 下方引導面板 */
         .info-panel {
-            width: 95%; max-width: 1200px; background: #25252d;
-            padding: 15px; border-radius: 8px; text-align: center;
+            width: 95%; max-width: 800px; background: #25252d;
+            padding: 12px; border-radius: 8px; text-align: center; box-sizing: border-box;
         }
-        #task-title { color: #ffd700; font-weight: bold; font-size: 18px; margin-bottom: 5px; }
-        #hint-msg { color: #ff9800; font-size: 15px; }
+        #task-title { color: #ffd700; font-weight: bold; font-size: 16px; margin-bottom: 4px; }
+        #hint-msg { color: #ff9800; font-size: 14px; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -138,7 +142,6 @@
         <h1>普豐精舍：禪堂燈控實景互動</h1>
     </header>
 
-    <!-- 關卡選單 -->
     <div class="level-menu">
         <button class="level-btn active" id="btn-lvl1" onclick="switchLevel(1)">第一關：課前開燈</button>
         <button class="level-btn" id="btn-lvl2" onclick="switchLevel(2)">第二關：開始靜坐</button>
@@ -147,59 +150,78 @@
     </div>
 
     <div class="game-container">
-        <!-- 左側：禪堂全暗實景與虛擬環境光 -->
+        <!-- 上方：禪堂全暗實景（100%全景呈現） -->
         <div class="zen-hall">
             <img src="zen-dark.jpg" class="zen-bg" alt="禪堂實景">
-            
-            <!-- 環境光遮罩（開燈越多，這個圖層越不透明，全暗照片就會變亮） -->
             <div class="light-overlay" id="environmental-light"></div>
-            
-            <!-- 虛擬投影布幕 -->
-            <div class="projector-screen" id="projectorScreen">📖 佛法課程 PPT 播放中</div>
+
+            <!-- 虛幕投影 -->
+            <div class="projector-screen" id="projectorScreen">
+                <span style="font-size: 15px; margin-bottom: 2px;">📖 佛法課程 PPT</span>
+                <span style="font-size: 11px; color: #666;">(大燈3區已關閉，投影清晰)</span>
+            </div>
         </div>
 
-        <!-- 右側：實體開關相片區 + 透明按鈕熱區 -->
+        <!-- 下方：實體開關相片區（100%全景呈現） -->
         <div class="panel-container">
-            <!-- 您的實體開關牆面照片 -->
             <img src="switches-panel.jpg" class="real-panel-img" alt="實體開關面板">
 
-            <!-- 疊加在照片按鈕位置上的「透明點擊盒」 -->
-            <div class="hit-box" id="hit-buddha" onclick="toggleSwitch('buddha')"></div>
-            <div class="hit-box" id="hit-merit" onclick="toggleSwitch('merit')"></div>
+            <!-- 按鈕透明點擊盒 -->
+            <div class="hit-box" id="hit-gate-detect" onclick="toggleSwitch('gate-detect')"></div>
+            <div class="hit-box" id="hit-center-detect" onclick="toggleSwitch('center-detect')"></div>
+            <div class="hit-box" id="hit-back-detect" onclick="toggleSwitch('back-detect')"></div>
+            
+            <div class="hit-box" id="hit-mid-left1" onclick="toggleSwitch('mid-left1')"></div>
+            <div class="hit-box" id="hit-west-detect" onclick="toggleSwitch('west-detect')"></div>
+            <div class="hit-box" id="hit-niche-glow" onclick="toggleSwitch('niche-glow')"></div>
+            
             <div class="hit-box" id="hit-l1" onclick="toggleSwitch('l1')"></div>
             <div class="hit-box" id="hit-l2" onclick="toggleSwitch('l2')"></div>
-            <div class="hit-box" id="hit-l3" onclick="toggleSwitch('l3')"></div>
             <div class="hit-box" id="hit-l4" onclick="toggleSwitch('l4')"></div>
-            <div class="hit-box" id="hit-niche" onclick="toggleSwitch('niche')"></div>
+            
+            <div class="hit-box" id="hit-altar" onclick="toggleSwitch('altar')"></div>
+            <div class="hit-box" id="hit-buddha-cast" onclick="toggleSwitch('buddha-cast')"></div>
             <div class="hit-box" id="hit-main-cast" onclick="toggleSwitch('main-cast')"></div>
-            <div class="hit-box" id="hit-screen-ctl" onclick="toggleSwitch('screen-ctl')"></div>
+            
+            <div class="hit-box" id="hit-l3" onclick="toggleSwitch('l3')"></div>
+            <div class="hit-box" id="hit-niche-in" onclick="toggleSwitch('niche-in')"></div>
+            <div class="hit-box" id="hit-halogen" onclick="toggleSwitch('halogen')"></div>
         </div>
     </div>
 
-    <!-- 底部引導 -->
     <div class="info-panel">
         <div id="task-title">第一關任務：課前開燈</div>
-        <div id="hint-msg">提示：請在右側照片中點擊對應的開關，將大燈全部打開！</div>
+        <div id="hint-msg">載入中...</div>
     </div>
 
     <script>
-        // 狀態紀錄
         const switches = {
-            buddha: false, merit: false, l1: false, l2: false, l3: false, l4: false,
-            niche: false, 'main-cast': false, 'screen-ctl': false
+            'gate-detect': false, 'center-detect': false, 'back-detect': false,
+            'mid-left1': false, 'west-detect': false, 'niche-glow': false,
+            'l1': false, 'l2': false, 'l4': false,
+            'altar': false, 'buddha-cast': false, 'main-cast': false,
+            'l3': false, 'niche-in': false, 'halogen': false
         };
+        
         let currentLevel = 1;
 
         function switchLevel(lvl) {
             currentLevel = lvl;
             for(let i=1; i<=4; i++) document.getElementById(`btn-lvl${i}`).classList.toggle('active', i === lvl);
             
-            // 初始化關卡開關
-            Object.keys(switches).forEach(k => switches[k] = (lvl === 2 || lvl === 4));
-            if(lvl === 2 || lvl === 4) switches['screen-ctl'] = false;
-            if(lvl === 3) switches['main-cast'] = true;
+            if (lvl === 1) {
+                Object.keys(switches).forEach(k => switches[k] = false);
+            } else if (lvl === 2) {
+                Object.keys(switches).forEach(k => switches[k] = true);
+                switches['mid-left1'] = false; switches['halogen'] = false;
+            } else if (lvl === 3) {
+                Object.keys(switches).forEach(k => switches[k] = false);
+                switches['main-cast'] = true;
+            } else if (lvl === 4) {
+                Object.keys(switches).forEach(k => switches[k] = true);
+                switches['mid-left1'] = false; switches['halogen'] = false;
+            }
 
-            // 同步按鈕樣式
             Object.keys(switches).forEach(k => {
                 document.getElementById('hit-' + k).classList.toggle('active', switches[k]);
             });
@@ -211,10 +233,24 @@
         function updateUIByLevel(lvl) {
             const t = document.getElementById('task-title');
             const h = document.getElementById('hint-msg');
-            if(lvl===1) { t.innerText="第一關：課前開燈"; h.innerText="目標：在照片上點開所有主要照明大燈與佛前燈！"; }
-            if(lvl===2) { t.innerText="第二關：開始靜坐"; h.innerText="提示：請依序關閉功能燈與大燈，最後「只留下主法投射燈」。"; }
-            if(lvl===3) { t.innerText="第三關：開靜結束"; h.innerText="提示：請依序打開功能燈、大燈，恢復禪堂光明。"; }
-            if(lvl===4) { t.innerText="第四關：播放PPT"; h.innerText="目標：點擊照片上的布幕開關降下布幕，並關閉「大燈 3 區」避免布幕反光。"; }
+            switch(lvl) {
+                case 1:
+                    t.innerText = "第一關：課前開燈 (大放光明)";
+                    h.innerText = "請點擊開關，將主要大燈（1-門、2、3、4-佛、龕內日光）及探照功能燈全部打開（依說明不開「鹵素燈」）。";
+                    break;
+                case 2:
+                    t.innerText = "第二關：開始靜坐 (依序關閉)";
+                    h.innerText = "請依序關燈：先關功能燈 ➔ 再關大燈（依序：龕內日光 ➔ 4-佛 ➔ 3 ➔ 2 ➔ 1-門） ➔ 最終只留下「主法-投」。";
+                    break;
+                case 3:
+                    t.innerText = "第三關：開靜結束 (開靜開燈)";
+                    h.innerText = "請依相反順序復原燈光：先點開大燈（依序：1-門 ➔ 2 ➔ 3 ➔ 4-佛 ➔ 龕內日光） ➔ 再補開其餘探照功能燈。";
+                    break;
+                case 4:
+                    t.innerText = "第四關：準備投影放 PPT";
+                    h.innerText = "請點擊「消超壇」降下布幕 (實體對應)，並關閉右側大面板的「3」區大燈以防止布幕反光！";
+                    break;
+            }
         }
 
         function toggleSwitch(id) {
@@ -224,36 +260,44 @@
             checkWinCondition();
         }
 
-        // 核心：連動明暗與布幕
         function updateVisuals() {
-            // 計算開了幾盞主要大燈
             let onCount = 0;
-            const mainKeys = ['buddha', 'merit', 'l1', 'l2', 'l3', 'l4', 'niche', 'main-cast'];
-            mainKeys.forEach(k => { if(switches[k]) onCount++; });
-
-            // 依據開燈比例，調整左側黃光遮罩的透明度 (讓全暗照片變亮)
-            const ratio = onCount / mainKeys.length;
+            const keys = Object.keys(switches);
+            keys.forEach(k => { if(switches[k] && k !== 'mid-left1' && k !== 'halogen') onCount++; });
+            
+            const ratio = onCount / (keys.length - 2);
             document.getElementById('environmental-light').style.opacity = ratio;
 
-            // 連動虛擬布幕
+            // 第四關連動：以「消超壇」作為降下布幕開關
             const screen = document.getElementById('projectorScreen');
-            if (switches['screen-ctl']) screen.classList.add('down');
+            if (switches['altar']) screen.classList.add('down');
             else screen.classList.remove('down');
         }
 
         function checkWinCondition() {
-            if (currentLevel === 1 && switches.buddha && switches.l1 && switches.l2 && switches.l3 && switches.l4) {
-                alert("🎉 第一關成功！殿堂已大放光明。"); switchLevel(2);
-            } else if (currentLevel === 2 && switches['main-cast'] && !switches.l1 && !switches.l4 && !switches.buddha) {
-                alert("🎉 第二關成功！禪堂已進入靜坐定境。"); switchLevel(3);
-            } else if (currentLevel === 3 && switches.l1 && switches.l2 && switches.l3 && switches.l4 && switches.buddha) {
-                alert("🎉 第三關成功！順利開靜復原燈光。"); switchLevel(4);
-            } else if (currentLevel === 4 && switches['screen-ctl'] && !switches.l3) {
-                alert("🎉 恭喜通過全部考驗！您已經是熟練的禪堂燈控大師了！");
+            if (currentLevel === 1) {
+                if (switches['l1'] && switches['l2'] && switches['l3'] && switches['l4'] && switches['niche-glow'] && switches['main-cast'] && switches['buddha-cast']) {
+                    setTimeout(() => { alert("🎉 第一關【課前開燈】成功！殿堂已大放光明。"); switchLevel(2); }, 300);
+                }
+            } 
+            else if (currentLevel === 2) {
+                const allMainOff = !switches['l1'] && !switches['l2'] && !switches['l3'] && !switches['l4'] && !switches['niche-glow'] && !switches['buddha-cast'] && !switches['altar'];
+                if (allMainOff && switches['main-cast']) {
+                    setTimeout(() => { alert("🎉 第二關【開始靜坐】成功！大眾已安住定境。"); switchLevel(3); }, 300);
+                }
+            } 
+            else if (currentLevel === 3) {
+                if (switches['l1'] && switches['l2'] && switches['l3'] && switches['l4'] && switches['niche-glow'] && switches['buddha-cast']) {
+                    setTimeout(() => { alert("🎉 第三關【結束靜坐】成功！大眾順利適應光線。"); switchLevel(4); }, 300);
+                }
+            } 
+            else if (currentLevel === 4) {
+                if (switches['altar'] && !switches['l3']) {
+                    setTimeout(() => { alert("🎉 恭喜通過考驗！布幕已降下且 3 區大燈已關閉。您已完全掌握普豐精舍的燈控流程！"); }, 300);
+                }
             }
         }
 
-        // 啟動
         switchLevel(1);
     </script>
 </body>
