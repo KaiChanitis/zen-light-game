@@ -42,7 +42,7 @@
             margin-bottom: 12px;
         }
 
-        /* 上方：禪堂實景區 */
+        /* ================= 上方：禪堂實景區 ================= */
         .zen-hall {
             position: relative;
             width: 100%;
@@ -54,18 +54,38 @@
             height: auto;
             display: block;
             object-fit: contain;
-            transition: filter 0.5s ease;
-        }
-        /* 當大燈打開時，利用 CSS 濾鏡模擬大光明效果，您也可以在未來替換成 real-bright.jpg */
-        .zen-bg.bright {
-            filter: brightness(1.6) contrast(1.1) saturate(1.1);
         }
 
-        .light-overlay {
+        /* 💡 核心改動：多層局部發光遮罩，實現開什麼開關就亮哪裡的感覺 */
+        .light-zone {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 245, 220, 0.4);
-            mix-blend-mode: screen; pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
+            background-color: rgba(255, 240, 190, 0.45);
+            mix-blend-mode: screen;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        /* 1. 主法與佛像投射燈區 (畫面左下角佛像與講台周圍) */
+        #zone-buddha {
+            clip-path: polygon(0% 60%, 30% 60%, 30% 100%, 0% 100%);
+            background-color: rgba(255, 220, 150, 0.55); /* 投射燈偏金黃 */
+        }
+
+        /* 2. 左側天花板主燈區 (天花板左半部格子燈) */
+        #zone-main-left {
+            clip-path: polygon(0% 0%, 55% 0%, 45% 65%, 0% 65%);
+        }
+
+        /* 3. 右側天花板主燈區 (天花板右半部格子燈與燈籠上方) */
+        #zone-main-right {
+            clip-path: polygon(55% 0%, 100% 0%, 100% 70%, 45% 65%);
+        }
+
+        /* 4. 周邊與龕內功能燈區 (兩側牆面與後方光線) */
+        #zone-ambient {
+            clip-path: polygon(0% 50%, 100% 50%, 100% 100%, 0% 100%);
         }
 
         /* 虛擬布幕 */
@@ -79,7 +99,7 @@
         }
         .projector-screen.down { top: 10%; }
 
-        /* 下方：實體開關相片區 */
+        /* ================= 下方：實體開關相片區 ================= */
         .panel-container {
             position: relative;
             width: 100%;
@@ -108,30 +128,19 @@
             box-shadow: 0 0 10px #ffd700;
         }
 
-        /* --------------------------------------------------
-           按鈕熱區位置座標 (%值)
-        -------------------------------------------------- */
-        /* 左側大面板 */
+        /* 按鈕座標百分比 */
         #hit-gate-detect   { top: 21%; left: 9.3%;  width: 8.5%; height: 16%; } 
         #hit-center-detect { top: 40%; left: 9.3%;  width: 8.5%; height: 16%; } 
         #hit-back-detect   { top: 59%; left: 9.3%;  width: 8.5%; height: 16%; } 
-
-        /* 中間大面板 - 左排 */
         #hit-mid-left1     { top: 22%; left: 31.3%; width: 8.5%; height: 15%; } 
         #hit-west-detect   { top: 40%; left: 31.3%; width: 8.5%; height: 15%; } 
         #hit-niche-glow    { top: 58%; left: 31.3%; width: 8.5%; height: 15%; } 
-
-        /* 中間大面板 - 右排 */
         #hit-l1            { top: 22%; left: 46.2%; width: 8.2%; height: 14%; } 
         #hit-l2            { top: 39%; left: 46.2%; width: 8.2%; height: 14%; } 
         #hit-l4            { top: 57%; left: 46.2%; width: 8.2%; height: 14%; } 
-
-        /* 右側大面板 - 左排 */
         #hit-altar         { top: 24%; left: 68.2%; width: 8.2%; height: 14%; } 
         #hit-buddha-cast   { top: 42%; left: 68.2%; width: 8.2%; height: 14%; } 
         #hit-main-cast     { top: 59%; left: 68.2%; width: 8.2%; height: 14%; } 
-
-        /* 右側大面板 - 右排 */
         #hit-l3            { top: 24%; left: 82.5%; width: 8.2%; height: 14%; } 
         #hit-niche-out     { top: 42%; left: 82.5%; width: 8.2%; height: 14%; } 
         #hit-halogen       { top: 59%; left: 82.5%; width: 8.2%; height: 14%; } 
@@ -160,10 +169,15 @@
     </div>
 
     <div class="game-container">
-        <!-- 上方：禪堂全暗實景（100%全景呈現） -->
+        <!-- 上方：禪堂實景與局部發光層 -->
         <div class="zen-hall">
-            <img src="zen-dark.jpg" id="zen-image" class="zen-bg" alt="禪堂實景">
-            <div class="light-overlay" id="environmental-light"></div>
+            <img src="zen-dark.jpg" class="zen-bg" alt="禪堂實景">
+            
+            <!-- 疊加的局部發光區塊 -->
+            <div class="light-zone" id="zone-buddha"></div>
+            <div class="light-zone" id="zone-main-left"></div>
+            <div class="light-zone" id="zone-main-right"></div>
+            <div class="light-zone" id="zone-ambient"></div>
 
             <!-- 虛幕投影 -->
             <div class="projector-screen" id="projectorScreen">
@@ -172,16 +186,16 @@
             </div>
         </div>
 
-        <!-- 下方：實體開關相片區（100%全景呈現） -->
+        <!-- 下方：實體開關相片區 -->
         <div class="panel-container">
             <img src="switches-panel.jpg" class="real-panel-img" alt="實體開關面板">
 
-            <!-- 按鈕透明點擊盒與滑鼠滑入提示 -->
+            <!-- 按鈕點擊盒 -->
             <div class="hit-box" id="hit-gate-detect" title="大門-探" onclick="toggleSwitch('gate-detect')"></div>
             <div class="hit-box" id="hit-center-detect" title="中央-探" onclick="toggleSwitch('center-detect')"></div>
             <div class="hit-box" id="hit-back-detect" title="後牆-探" onclick="toggleSwitch('back-detect')"></div>
             
-            <div class="hit-box" id="hit-mid-left1" title="中排左上(無標籤)" onclick="toggleSwitch('mid-left1')"></div>
+            <div class="hit-box" id="hit-mid-left1" title="中排左上" onclick="toggleSwitch('mid-left1')"></div>
             <div class="hit-box" id="hit-west-detect" title="西牆-探" onclick="toggleSwitch('west-detect')"></div>
             <div class="hit-box" id="hit-niche-glow" title="龕內日光" onclick="toggleSwitch('niche-glow')"></div>
             
@@ -189,11 +203,11 @@
             <div class="hit-box" id="hit-l2" title="2 (主要大燈)" onclick="toggleSwitch('l2')"></div>
             <div class="hit-box" id="hit-l4" title="4-佛 (主要大燈)" onclick="toggleSwitch('l4')"></div>
             
-            <div class="hit-box" id="hit-altar" title="消超壇 (功能燈)" onclick="toggleSwitch('altar')"></div>
-            <div class="hit-box" id="hit-buddha-cast" title="佛像-投 (投射燈)" onclick="toggleSwitch('buddha-cast')"></div>
-            <div class="hit-box" id="hit-main-cast" title="主法-投 (投射燈)" onclick="toggleSwitch('main-cast')"></div>
+            <div class="hit-box" id="hit-altar" title="消超壇" onclick="toggleSwitch('altar')"></div>
+            <div class="hit-box" id="hit-buddha-cast" title="佛像-投" onclick="toggleSwitch('buddha-cast')"></div>
+            <div class="hit-box" id="hit-main-cast" title="主法-投" onclick="toggleSwitch('main-cast')"></div>
             
-            <div class="hit-box" id="hit-l3" title="3 (主要大燈 / 佛龕-嵌外)" onclick="toggleSwitch('l3')"></div>
+            <div class="hit-box" id="hit-l3" title="3 (主要大燈)" onclick="toggleSwitch('l3')"></div>
             <div class="hit-box" id="hit-niche-out" title="佛龕-嵌內" onclick="toggleSwitch('niche-out')"></div>
             <div class="hit-box" id="hit-halogen" title="鹵素燈" onclick="toggleSwitch('halogen')"></div>
         </div>
@@ -206,7 +220,6 @@
     </div>
 
     <script>
-        // 對應開關的繁體中文名稱
         const switchNames = {
             'gate-detect': '大門-探', 'center-detect': '中央-探', 'back-detect': '後牆-探',
             'mid-left1': '中排左上', 'west-detect': '西牆-探', 'niche-glow': '龕內日光',
@@ -230,23 +243,18 @@
             for(let i=1; i<=4; i++) document.getElementById(`btn-lvl${i}`).classList.toggle('active', i === lvl);
             
             if (lvl === 1) {
-                // 第一關：初始全部關閉
                 Object.keys(switches).forEach(k => switches[k] = false);
             } else if (lvl === 2) {
-                // 第二關：初始為大放光明（除了沒作用的燈以外，大燈與功能燈全開）
                 Object.keys(switches).forEach(k => switches[k] = true);
                 switches['mid-left1'] = false; switches['halogen'] = false;
             } else if (lvl === 3) {
-                // 第三關：靜坐結束時，場上應該只剩下主法-投
                 Object.keys(switches).forEach(k => switches[k] = false);
                 switches['main-cast'] = true;
             } else if (lvl === 4) {
-                // 第四關：放PPT前，燈光回到全開狀態
                 Object.keys(switches).forEach(k => switches[k] = true);
                 switches['mid-left1'] = false; switches['halogen'] = false;
             }
 
-            // 同步介面高亮
             Object.keys(switches).forEach(k => {
                 document.getElementById('hit-' + k).classList.toggle('active', switches[k]);
             });
@@ -283,7 +291,6 @@
             switches[id] = !switches[id];
             document.getElementById('hit-' + id).classList.toggle('active', switches[id]);
             
-            // 顯示當前點擊的燈具名稱與狀態
             const statusText = switches[id] ? "開啟" : "關閉";
             document.getElementById('current-action').innerText = `💡 切換狀態：[${switchNames[id]}] 已${statusText}`;
 
@@ -292,21 +299,23 @@
         }
 
         function updateVisuals() {
-            // 計算大燈跟功能燈亮起的數量，來決定畫面的明暗度
-            let onCount = 0;
-            const coreLights = ['l1', 'l2', 'l3', 'l4', 'niche-glow', 'buddha-cast', 'main-cast'];
-            coreLights.forEach(k => { if(switches[k]) onCount++; });
+            // 💡 核心聯動邏輯：根據開關狀態，精準切換畫面的特定燈光區塊
             
-            const ratio = onCount / coreLights.length;
-            document.getElementById('environmental-light').style.opacity = ratio * 0.7;
+            // 1. 主法與佛像投射燈 (左下角)
+            const buddhaOn = switches['main-cast'] || switches['buddha-cast'];
+            document.getElementById('zone-buddha').style.opacity = buddhaOn ? "1" : "0";
 
-            // 如果主要大燈開了 3 盞以上，背景圖切換為明亮濾鏡效果
-            const zenImg = document.getElementById('zen-image');
-            if (onCount >= 4) {
-                zenImg.classList.add('bright');
-            } else {
-                zenImg.classList.remove('bright');
-            }
+            // 2. 天花板主燈左側 (1-門, 2)
+            const mainLeftOn = switches['l1'] || switches['l2'];
+            document.getElementById('zone-main-left').style.opacity = mainLeftOn ? "1" : "0";
+
+            // 3. 天花板主燈右側 (3, 4-佛)
+            const mainRightOn = switches['l3'] || switches['l4'];
+            document.getElementById('zone-main-right').style.opacity = mainRightOn ? "1" : "0";
+
+            // 4. 周邊功能探照燈與龕內 (探照燈類、龕內日光)
+            const ambientOn = switches['gate-detect'] || switches['center-detect'] || switches['back-detect'] || switches['west-detect'] || switches['niche-glow'] || switches['niche-out'];
+            document.getElementById('zone-ambient').style.opacity = ambientOn ? "0.8" : "0";
 
             // 第四關連動：以「消超壇」作為降下布幕開關
             const screen = document.getElementById('projectorScreen');
@@ -316,33 +325,28 @@
 
         function checkWinCondition() {
             if (currentLevel === 1) {
-                // 第一關過關條件：大燈 1,2,3,4 加上 龕內日光、主法投、佛像投皆開啟
                 if (switches['l1'] && switches['l2'] && switches['l3'] && switches['l4'] && switches['niche-glow'] && switches['main-cast'] && switches['buddha-cast']) {
                     setTimeout(() => { alert("🎉 第一關【課前開燈】成功！殿堂已大放光明。"); switchLevel(2); }, 300);
                 }
             } 
             else if (currentLevel === 2) {
-                // 第二關過關條件：除了主法-投是開著的，其餘主要大燈與功能燈皆已順利關閉
                 const allMainOff = !switches['l1'] && !switches['l2'] && !switches['l3'] && !switches['l4'] && !switches['niche-glow'] && !switches['buddha-cast'] && !switches['altar'];
                 if (allMainOff && switches['main-cast']) {
                     setTimeout(() => { alert("🎉 第二關【開始靜坐】成功！大眾已安住定境。"); switchLevel(3); }, 300);
                 }
             } 
             else if (currentLevel === 3) {
-                // 第三關過關條件：復原大燈與投射燈
                 if (switches['l1'] && switches['l2'] && switches['l3'] && switches['l4'] && switches['niche-glow'] && switches['buddha-cast']) {
                     setTimeout(() => { alert("🎉 第三關【結束靜坐】成功！大眾順利適應光線。"); switchLevel(4); }, 300);
                 }
             } 
             else if (currentLevel === 4) {
-                // 第四關過關條件：消超壇(布幕)開啟，且大燈 3 關閉
                 if (switches['altar'] && !switches['l3']) {
                     setTimeout(() => { alert("🎉 恭喜完全通關！您已完全精通精舍的實體燈控與課堂切換流程！"); }, 300);
                 }
             }
         }
 
-        // 初始化啟動
         switchLevel(1);
     </script>
 </body>
